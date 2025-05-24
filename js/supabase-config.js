@@ -59,9 +59,12 @@ export const auth = {
     // Get current user
     async getCurrentUser() {
         try {
-            const { data: { user }, error } = await supabase.auth.getUser()
-            if (error) throw error
-            return user
+            const { data: { session }, error } = await supabase.auth.getSession()
+            if (error) {
+                console.error('Get session error:', error)
+                return null
+            }
+            return session?.user || null
         } catch (error) {
             console.error('Get user error:', error)
             return null
@@ -71,6 +74,24 @@ export const auth = {
     // Listen to auth changes
     onAuthStateChange(callback) {
         return supabase.auth.onAuthStateChange(callback)
+    },
+
+    // Google Sign In
+    async signInWithGoogle() {
+        try {
+            const { data, error } = await supabase.auth.signInWithOAuth({
+                provider: 'google',
+                options: {
+                    redirectTo: window.location.origin
+                }
+            })
+
+            if (error) throw error
+            return { success: true, data }
+        } catch (error) {
+            console.error('Google sign in error:', error)
+            return { success: false, error: error.message }
+        }
     }
 }
 

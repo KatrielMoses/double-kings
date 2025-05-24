@@ -186,6 +186,18 @@ function setupEventListeners() {
         });
     }
 
+    // Google Sign-In buttons
+    const googleSignInBtn = document.getElementById('custom-google-signin');
+    const googleSignUpBtn = document.getElementById('custom-google-signup');
+
+    if (googleSignInBtn) {
+        googleSignInBtn.addEventListener('click', handleGoogleSignIn);
+    }
+
+    if (googleSignUpBtn) {
+        googleSignUpBtn.addEventListener('click', handleGoogleSignIn);
+    }
+
     // Form submissions
     setupFormHandlers();
 }
@@ -262,6 +274,28 @@ function setupFormHandlers() {
                 submitBtn.textContent = originalText;
             }
         });
+    }
+}
+
+// Google Sign-In handler
+async function handleGoogleSignIn() {
+    try {
+        const result = await auth.signInWithGoogle();
+
+        if (result.success) {
+            // Close modals
+            const loginModal = document.getElementById('loginModal');
+            const signupModal = document.getElementById('signupModal');
+            if (loginModal) loginModal.style.display = 'none';
+            if (signupModal) signupModal.style.display = 'none';
+
+            showNotification('Successfully signed in with Google!', 'success');
+        } else {
+            showNotification('Google sign-in failed: ' + result.error, 'error');
+        }
+    } catch (error) {
+        console.error('Google sign-in error:', error);
+        showNotification('Google sign-in error: ' + error.message, 'error');
     }
 }
 

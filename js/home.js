@@ -179,4 +179,38 @@ function setupModalHandlers() {
             }
         });
     }
+
+    // Google Sign-In buttons
+    const googleSignInBtn = document.getElementById('custom-google-signin');
+    const googleSignUpBtn = document.getElementById('custom-google-signup');
+
+    if (googleSignInBtn) {
+        googleSignInBtn.addEventListener('click', async () => {
+            try {
+                const result = await auth.signInWithGoogle();
+                if (result.success) {
+                    document.getElementById('loginModal').style.display = 'none';
+                } else {
+                    alert('Google sign-in failed: ' + result.error);
+                }
+            } catch (error) {
+                alert('Google sign-in error: ' + error.message);
+            }
+        });
+    }
+
+    if (googleSignUpBtn) {
+        googleSignUpBtn.addEventListener('click', async () => {
+            try {
+                const result = await auth.signInWithGoogle();
+                if (result.success) {
+                    document.getElementById('signupModal').style.display = 'none';
+                } else {
+                    alert('Google sign-in failed: ' + result.error);
+                }
+            } catch (error) {
+                alert('Google sign-in error: ' + error.message);
+            }
+        });
+    }
 } 
