@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exercise Modal Test</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/workout-logger.css">
+    <style>
+        body {
+            padding: 2rem;
+            background: var(--primary-color);
+            color: var(--text-color);
+        }
+
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 2rem;
+            border-radius: 15px;
+        }
+
+        .test-btn {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            margin: 1rem;
+        }
+
+        .test-btn:hover {
+            background: #219a52;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="test-container">
+        <h1>Enhanced Exercise Modal Test</h1>
+        <p>This page tests the new enhanced "Add Exercise" modal functionality.</p>
+
+        <h2>Test Scenarios:</h2>
+        <button class="test-btn" onclick="testPushDayContext()">Test Push Day Context</button>
+        <button class="test-btn" onclick="testPullDayContext()">Test Pull Day Context</button>
+        <button class="test-btn" onclick="testLegsContext()">Test Legs Day Context</button>
+        <button class="test-btn" onclick="testGeneralContext()">Test General Context</button>
+
+        <div id="exerciseListContainer" style="display: none;">
+            <ul id="exerciseList"></ul>
+        </div>
+
+        <!-- Add Exercise Modal -->
+        <div id="addExerciseModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Add Exercise</h2>
+                    <button class="close-modal" id="closeAddExerciseModal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <!-- Exercise Selection Tabs -->
+                    <div class="exercise-tabs">
+                        <button type="button" class="exercise-tab-btn active" data-tab="popular">Popular
+                            Exercises</button>
+                        <button type="button" class="exercise-tab-btn" data-tab="custom">Custom Exercise</button>
+                    </div>
+
+                    <!-- Popular Exercises Tab -->
+                    <div id="popularExercisesTab" class="exercise-tab-content active">
+                        <div class="popular-exercises-header">
+                            <h3 id="currentSplitDayTitle">Recommended for your workout</h3>
+                            <p class="popular-exercises-subtitle">Click any exercise to add it to your workout</p>
+                        </div>
+                        <div id="popularExercisesList" class="popular-exercises-grid">
+                            <!-- Popular exercises will be populated here -->
+                        </div>
+                    </div>
+
+                    <!-- Custom Exercise Tab -->
+                    <div id="customExerciseTab" class="exercise-tab-content">
+                        <div class="form-group">
+                            <label for="newExerciseMuscleGroup">Muscle Group</label>
+                            <select id="newExerciseMuscleGroup" required>
+                                <option value="">Select Muscle Group</option>
+                                <option value="chest">Chest</option>
+                                <option value="back">Back</option>
+                                <option value="legs">Legs</option>
+                                <option value="shoulders">Shoulders</option>
+                                <option value="arms">Arms</option>
+                                <option value="core">Core</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="customExerciseName">Exercise Name</label>
+                            <input type="text" id="customExerciseName" placeholder="Enter exercise name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="newExerciseSets">Default Sets</label>
+                            <input type="number" id="newExerciseSets" min="1" max="10" value="3" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="newExerciseReps">Default Reps</label>
+                            <input type="text" id="newExerciseReps" placeholder="e.g., 8-12 or 30 sec" value="8-12"
+                                required>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" id="addCustomExerciseBtn" class="save-btn">Add to Workout</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/workout-templates.js"></script>
+    <script>
+        // Test functions to simulate different workout contexts
+        function testPushDayContext() {
+            window.currentTemplate = {
+                name: 'Push Day',
+                exercises: [
+                    { muscleGroup: 'chest', exercise: 'Bench Press', defaultSets: 4, defaultReps: '8-12' },
+                    { muscleGroup: 'shoulders', exercise: 'Military Press', defaultSets: 3, defaultReps: '8-12' }
+                ]
+            };
+            openTestModal();
+        }
+
+        function testPullDayContext() {
+            window.currentTemplate = {
+                name: 'Pull Day',
+                exercises: [
+                    { muscleGroup: 'back', exercise: 'Pull-Ups', defaultSets: 3, defaultReps: '8-12' },
+                    { muscleGroup: 'arms', exercise: 'Bicep Curls', defaultSets: 3, defaultReps: '12-15' }
+                ]
+            };
+            openTestModal();
+        }
+
+        function testLegsContext() {
+            window.currentTemplate = {
+                name: 'Legs Day',
+                exercises: [
+                    { muscleGroup: 'legs', exercise: 'Squats', defaultSets: 4, defaultReps: '8-12' },
+                    { muscleGroup: 'legs', exercise: 'Leg Press', defaultSets: 3, defaultReps: '10-12' }
+                ]
+            };
+            openTestModal();
+        }
+
+        function testGeneralContext() {
+            window.currentTemplate = null;
+            openTestModal();
+        }
+
+        function openTestModal() {
+            document.getElementById('addExerciseModal').classList.add('active');
+            populatePopularExercises();
+            switchToTab('popular');
+        }
+
+        // Simplified versions of the main functions for testing
+        const exercises = {
+            chest: ['Bench Press', 'Incline Bench Press', 'Dumbbell Flyes', 'Push-Ups', 'Cable Flyes'],
+            back: ['Pull-Ups', 'Lat Pulldowns', 'Barbell Rows', 'Dumbbell Rows', 'Deadlifts'],
+            legs: ['Squats', 'Deadlifts', 'Leg Press', 'Lunges', 'Leg Extensions'],
+            shoulders: ['Military Press', 'Lateral Raises', 'Front Raises', 'Rear Delt Flyes'],
+            arms: ['Bicep Curls', 'Tricep Extensions', 'Hammer Curls', 'Skull Crushers'],
+            core: ['Crunches', 'Planks', 'Russian Twists', 'Leg Raises']
+        };
+
+        function switchToTab(tabName) {
+            document.querySelectorAll('.exercise-tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+
+            document.querySelectorAll('.exercise-tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(`${tabName}ExercisesTab`).classList.add('active');
+        }
+
+        function populatePopularExercises() {
+            const popularExercisesList = document.getElementById('popularExercisesList');
+            const currentSplitDayTitle = document.getElementById('currentSplitDayTitle');
+
+            popularExercisesList.innerHTML = '';
+
+            if (!window.currentTemplate) {
+                currentSplitDayTitle.textContent = 'General Popular Exercises';
+                populateGeneralExercises();
+                return;
+            }
+
+            currentSplitDayTitle.textContent = `Popular exercises for ${window.currentTemplate.name || 'your workout'}`;
+
+            const currentMuscleGroups = [...new Set(window.currentTemplate.exercises.map(ex => ex.muscleGroup))];
+            const recommendedExercises = [];
+
+            currentMuscleGroups.forEach(muscleGroup => {
+                if (exercises[muscleGroup]) {
+                    exercises[muscleGroup].forEach(exerciseName => {
+                        const alreadyExists = window.currentTemplate.exercises.some(ex => ex.exercise === exerciseName);
+                        if (!alreadyExists) {
+                            recommendedExercises.push({
+                                name: exerciseName,
+                                muscleGroup: muscleGroup,
+                                sets: 3,
+                                reps: '8-12'
+                            });
+                        }
+                    });
+                }
+            });
+
+            if (recommendedExercises.length === 0) {
+                populateGeneralExercises();
+                return;
+            }
+
+            recommendedExercises.forEach(exercise => {
+                createPopularExerciseCard(exercise);
+            });
+        }
+
+        function populateGeneralExercises() {
+            const generalPopular = [
+                { name: 'Bench Press', muscleGroup: 'chest', sets: 4, reps: '8-12' },
+                { name: 'Squats', muscleGroup: 'legs', sets: 4, reps: '8-12' },
+                { name: 'Deadlifts', muscleGroup: 'back', sets: 3, reps: '6-8' },
+                { name: 'Pull-Ups', muscleGroup: 'back', sets: 3, reps: '8-12' }
+            ];
+
+            generalPopular.forEach(exercise => {
+                createPopularExerciseCard(exercise);
+            });
+        }
+
+        function createPopularExerciseCard(exercise) {
+            const popularExercisesList = document.getElementById('popularExercisesList');
+
+            const card = document.createElement('div');
+            card.className = 'popular-exercise-card';
+            card.innerHTML = `
+                <div class="popular-exercise-name">${exercise.name}</div>
+                <div class="popular-exercise-muscle">${exercise.muscleGroup}</div>
+                <div class="popular-exercise-details">${exercise.sets} sets × ${exercise.reps}</div>
+            `;
+
+            card.addEventListener('click', () => {
+                document.querySelectorAll('.popular-exercise-card').forEach(c => {
+                    c.classList.remove('selected');
+                });
+                card.classList.add('selected');
+                alert(`Would add: ${exercise.name} to workout!`);
+            });
+
+            popularExercisesList.appendChild(card);
+        }
+
+        // Event listeners
+        document.querySelectorAll('.exercise-tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tabName = btn.dataset.tab;
+                switchToTab(tabName);
+            });
+        });
+
+        document.getElementById('closeAddExerciseModal').addEventListener('click', () => {
+            document.getElementById('addExerciseModal').classList.remove('active');
+        });
+
+        document.getElementById('addCustomExerciseBtn').addEventListener('click', () => {
+            const muscleGroup = document.getElementById('newExerciseMuscleGroup').value;
+            const exerciseName = document.getElementById('customExerciseName').value.trim();
+            const sets = document.getElementById('newExerciseSets').value;
+            const reps = document.getElementById('newExerciseReps').value.trim();
+
+            if (!muscleGroup || !exerciseName || !sets || !reps) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            alert(`Would add custom exercise: ${exerciseName} (${muscleGroup}) - ${sets} sets × ${reps}!`);
+            document.getElementById('addExerciseModal').classList.remove('active');
+        });
+    </script>
+</body>
+
+</html>

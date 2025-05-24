@@ -1,0 +1,405 @@
+/* Workout Logger Animations CSS */
+
+/* Base animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(-20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes scaleUp {
+    from {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.05);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+@keyframes shake {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    20%,
+    60% {
+        transform: translateX(-2px);
+    }
+
+    40%,
+    80% {
+        transform: translateX(2px);
+    }
+}
+
+@keyframes highlight {
+    0% {
+        background-color: rgba(52, 152, 219, 0.4);
+    }
+
+    100% {
+        background-color: transparent;
+    }
+}
+
+@keyframes bounce {
+
+    0%,
+    20%,
+    50%,
+    80%,
+    100% {
+        transform: translateY(0);
+    }
+
+    40% {
+        transform: translateY(-10px);
+    }
+
+    60% {
+        transform: translateY(-5px);
+    }
+}
+
+/* Apply animations to elements */
+.workout-logger {
+    animation: fadeIn 0.5s ease;
+}
+
+.workout-header {
+    animation: slideIn 0.4s ease;
+}
+
+/* Form container animations */
+.workout-form {
+    animation: scaleUp 0.5s ease;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    border-radius: 15px;
+    transform-origin: center;
+}
+
+.workout-form:hover {
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+    transform: translateY(-3px);
+}
+
+/* Exercise dropdown animation */
+.exercise-dropdown {
+    animation: fadeIn 0.5s ease;
+    transition: all 0.3s ease;
+}
+
+.exercise-dropdown:focus {
+    transform: scale(1.02);
+}
+
+/* Date selector animation */
+.date-selector {
+    transition: all 0.3s ease;
+}
+
+.date-selector:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Set input group animation */
+.set-group {
+    position: relative;
+    animation: fadeIn 0.4s ease;
+    transition: all 0.3s ease;
+    transform-origin: center;
+}
+
+.set-group:hover {
+    transform: translateX(5px);
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+}
+
+.set-group:nth-child(odd):hover {
+    transform: translateX(-5px);
+}
+
+/* Animate new set groups when added */
+.set-group.new-set {
+    animation: slideInRight 0.4s ease;
+}
+
+/* Set number label animation */
+.set-number {
+    transition: all 0.3s ease;
+}
+
+.set-group:hover .set-number {
+    color: #3498db;
+    transform: scale(1.1);
+}
+
+/* Input field animations */
+.weight-input,
+.reps-input {
+    transition: all 0.3s ease;
+}
+
+.weight-input:focus,
+.reps-input:focus {
+    transform: scale(1.05);
+}
+
+/* Weight unit toggle animation */
+.weight-unit {
+    transition: all 0.3s ease;
+}
+
+.weight-unit:hover {
+    background: rgba(52, 152, 219, 0.2);
+}
+
+/* Add set button animation */
+.add-set-btn {
+    animation: fadeIn 0.5s ease;
+    transition: all 0.3s ease;
+}
+
+.add-set-btn:hover {
+    transform: translateY(-3px) scale(1.03);
+}
+
+.add-set-btn i {
+    transition: transform 0.3s ease;
+}
+
+.add-set-btn:hover i {
+    transform: rotate(90deg);
+}
+
+/* Remove set button animation */
+.remove-set-btn {
+    opacity: 0.7;
+    transition: all 0.3s ease;
+}
+
+.set-group:hover .remove-set-btn {
+    opacity: 1;
+}
+
+.remove-set-btn:hover {
+    color: #e74c3c;
+    transform: scale(1.2);
+}
+
+/* Log workout button animation */
+.log-workout-btn {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.log-workout-btn:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: all 0.5s ease;
+}
+
+.log-workout-btn:hover:before {
+    left: 100%;
+}
+
+.log-workout-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(52, 152, 219, 0.4);
+}
+
+.log-workout-btn:active {
+    transform: translateY(1px);
+}
+
+/* Workout history section */
+.workout-history {
+    animation: fadeIn 0.5s ease 0.2s;
+    animation-fill-mode: both;
+}
+
+.history-heading {
+    animation: slideIn 0.4s ease;
+}
+
+/* History entry animations */
+.history-entry {
+    animation: fadeIn 0.4s ease;
+    animation-fill-mode: both;
+    transition: all 0.3s ease;
+}
+
+.history-entry:nth-child(1) {
+    animation-delay: 0.1s;
+}
+
+.history-entry:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.history-entry:nth-child(3) {
+    animation-delay: 0.3s;
+}
+
+.history-entry:nth-child(4) {
+    animation-delay: 0.4s;
+}
+
+.history-entry:nth-child(5) {
+    animation-delay: 0.5s;
+}
+
+.history-entry:hover {
+    transform: translateY(-3px);
+    background: rgba(255, 255, 255, 0.05);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Delete workout animation */
+.delete-workout {
+    opacity: 0.7;
+    transition: all 0.3s ease;
+}
+
+.history-entry:hover .delete-workout {
+    opacity: 1;
+}
+
+.delete-workout:hover {
+    color: #e74c3c;
+    transform: scale(1.2);
+}
+
+.delete-workout.confirming {
+    animation: shake 0.5s ease;
+    color: #e74c3c;
+}
+
+/* Success message animation */
+.success-message {
+    animation: slideInRight 0.5s ease, fadeOut 0.5s ease 3s forwards;
+    box-shadow: 0 5px 20px rgba(39, 174, 96, 0.3);
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    to {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+}
+
+/* Empty state animation */
+.no-workouts {
+    animation: fadeIn 0.5s ease;
+}
+
+.no-workouts-icon {
+    font-size: 3rem;
+    color: #3498db;
+    opacity: 0.7;
+    animation: pulse 2s infinite ease-in-out;
+}
+
+/* 1RM calculation highlight */
+.one-rep-max {
+    transition: all 0.3s ease;
+}
+
+.history-entry:hover .one-rep-max {
+    background: rgba(52, 152, 219, 0.2);
+    color: white;
+    padding: 2px 5px;
+    border-radius: 4px;
+}
+
+/* Set highlight when entered */
+.set-highlight {
+    animation: highlight 1.5s ease;
+}
+
+/* Success feedback for logging workout */
+.workout-logged {
+    animation: bounce 1s ease;
+}
+
+/* Responsive animations */
+@media (max-width: 768px) {
+    .set-group:hover {
+        transform: none;
+    }
+
+    .set-group:nth-child(odd):hover {
+        transform: none;
+    }
+
+    .workout-form {
+        animation-duration: 0.3s;
+    }
+
+    .history-entry {
+        animation-duration: 0.3s;
+    }
+}

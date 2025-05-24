@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workout Logger - Double Kings Fitness</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/background.css">
+    <link rel="stylesheet" href="styles/workout-logger.css">
+    <link rel="stylesheet" href="styles/workout-logger-animations.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <!-- Mountain Background -->
+    <div class="mountain-background">
+        <div class="stars"></div>
+        <div class="clouds"></div>
+        <div class="mountains">
+            <div class="mountain-back"></div>
+            <div class="mountain-mid"></div>
+            <div class="mountain-front"></div>
+        </div>
+    </div>
+
+    <nav class="navbar">
+        <div class="logo">
+            <div class="logo-icon">
+                <span class="crown-left"><i class="fas fa-crown"></i></span>
+                <span class="crown-right"><i class="fas fa-crown"></i></span>
+            </div>
+            <span class="logo-text">Double Kings</span>
+        </div>
+        <div class="nav-links">
+            <a href="index.html" class="nav-link">Home</a>
+            <a href="workout-logger.html" class="nav-link active">Workout Logger</a>
+            <a href="progress-monitoring.html" class="nav-link">Progress Monitoring</a>
+            <a href="goal-setting.html" class="nav-link">Goal Setting</a>
+            <div class="auth-section">
+                <div class="user-profile" id="userProfile">
+                    <span id="user-name">User</span>
+                    <i class="fas fa-chevron-down"></i>
+                    <div class="user-dropdown">
+                        <a href="workout-logger.html" class="dropdown-item">
+                            <i class="fas fa-dumbbell"></i> Workout Logger
+                        </a>
+                        <a href="progress-monitoring.html" class="dropdown-item">
+                            <i class="fas fa-chart-line"></i> Progress Monitoring
+                        </a>
+                        <a href="goal-setting.html" class="dropdown-item">
+                            <i class="fas fa-bullseye"></i> Goal Setting
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a href="#" class="dropdown-item" id="logoutBtn">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="workout-logger">
+        <div class="container">
+            <header class="page-header">
+                <h1>Log Your Workout</h1>
+                <p class="subtitle">Track your progress, celebrate your gains</p>
+                <p class="date-info"><i class="fas fa-calendar-alt"></i> You can log workouts for today or previous
+                    dates</p>
+            </header>
+
+            <div class="workout-content">
+                <!-- Workout Templates Section -->
+                <div class="workout-templates">
+                    <h2 class="section-title">Workout Templates</h2>
+
+                    <!-- Step 1: Select Workout Split -->
+                    <div class="template-step" id="splitSelectionStep">
+                        <div class="step-header">
+                            <h3 class="step-title">Select Workout Split</h3>
+                        </div>
+                        <div class="split-grid">
+                            <div class="split-card" data-split="pushPullLegs">
+                                <div class="split-icon">
+                                    <i class="fas fa-dumbbell"></i>
+                                </div>
+                                <div class="split-name">Push/Pull/Legs</div>
+                            </div>
+                            <div class="split-card" data-split="upperLower">
+                                <div class="split-icon">
+                                    <i class="fas fa-exchange-alt"></i>
+                                </div>
+                                <div class="split-name">Upper/Lower</div>
+                            </div>
+                            <div class="split-card" data-split="fullBody">
+                                <div class="split-icon">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <div class="split-name">Full Body</div>
+                            </div>
+                            <div class="split-card" data-split="custom">
+                                <div class="split-icon">
+                                    <i class="fas fa-star"></i>
+                                </div>
+                                <div class="split-name">Custom Templates</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Select Workout Day (initially hidden) -->
+                    <div class="template-step" id="daySelectionStep" style="display: none;">
+                        <div class="step-header">
+                            <button class="back-btn" id="backToSplits"><i class="fas fa-arrow-left"></i> Back</button>
+                            <h3 class="step-title">Select Workout Day</h3>
+                        </div>
+                        <div class="day-grid" id="workoutDayGrid">
+                            <!-- Day cards will be added dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Hidden form selects for compatibility with existing code -->
+                    <div style="display: none;">
+                        <select id="workoutSplit">
+                            <option value="">Choose a Split</option>
+                        </select>
+                        <select id="workoutDay">
+                            <option value="">Choose a Day</option>
+                        </select>
+                    </div>
+
+                    <div class="template-actions">
+                        <button type="button" id="loadTemplate" class="secondary-btn">Load Template</button>
+                        <button type="button" id="saveAsTemplate" class="secondary-btn">Save Current as
+                            Template</button>
+                    </div>
+                </div>
+
+                <!-- Exercise List Column (initially hidden) -->
+                <div id="exerciseListContainer" class="exercise-list-container" style="display: none;">
+                    <h3 class="section-title">Exercises to Complete</h3>
+                    <div class="workout-date-container">
+                        <div class="form-group">
+                            <label for="workoutDate">Workout Date</label>
+                            <input type="date" id="workoutDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="weightUnit">Weight Unit</label>
+                            <select id="weightUnit" required>
+                                <option value="kg">Kilograms (kg)</option>
+                                <option value="lbs">Pounds (lbs)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="exercise-list-header">
+                        <div class="exercise-list-title">Drag to reorder exercises</div>
+                        <button id="addExerciseBtn" class="add-exercise-btn">
+                            <i class="fas fa-plus"></i> Add Exercise
+                        </button>
+                    </div>
+
+                    <ul id="exerciseList" class="exercise-list">
+                        <!-- Exercise items will be added here dynamically -->
+                    </ul>
+
+                    <div class="form-actions">
+                        <button type="button" id="saveWorkoutBtn" class="submit-btn">Save Workout</button>
+                    </div>
+                </div>
+
+                <!-- Add Exercise Modal -->
+                <div id="addExerciseModal" class="modal" style="display: none;">
+                    <!-- Modal content hidden since we're using inline editing now -->
+                </div>
+
+                <!-- Remove exercise details section since we're doing inline logging -->
+                <div id="exerciseDetailsSection" class="form-section" style="display: none;"></div>
+
+                <div class="workout-history">
+                    <h2 class="section-title">Workout History</h2>
+                    <div id="workoutList" class="workout-list">
+                        <!-- Workout entries will be added here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script type="module" src="js/main.js"></script>
+    <script type="module" src="js/workout-logger.js"></script>
+    <script type="module" src="js/ui-interactions.js"></script>
+    <script type="module" src="js/workout-templates.js"></script>
+</body>
+
+</html>

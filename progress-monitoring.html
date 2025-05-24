@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Progress Monitoring - Double Kings Fitness</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/background.css">
+    <link rel="stylesheet" href="styles/progress-monitoring.css">
+    <link rel="stylesheet" href="styles/progress-monitoring-animations.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <!-- Chart.js with required date-time adapter -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+</head>
+
+<body>
+    <!-- Mountain Background -->
+    <div class="mountain-background">
+        <div class="stars"></div>
+        <div class="clouds"></div>
+        <div class="mountains">
+            <div class="mountain-back"></div>
+            <div class="mountain-mid"></div>
+            <div class="mountain-front"></div>
+        </div>
+    </div>
+
+    <nav class="navbar">
+        <div class="logo">
+            <div class="logo-icon">
+                <span class="crown-left"><i class="fas fa-crown"></i></span>
+                <span class="crown-right"><i class="fas fa-crown"></i></span>
+            </div>
+            <span class="logo-text">Double Kings</span>
+        </div>
+        <div class="nav-links">
+            <a href="index.html" class="nav-link">Home</a>
+            <a href="workout-logger.html" class="nav-link">Workout Logger</a>
+            <a href="progress-monitoring.html" class="nav-link active">Progress Monitoring</a>
+            <div class="auth-section">
+                <div class="user-profile" id="userProfile">
+                    <span id="user-name">User</span>
+                    <i class="fas fa-chevron-down"></i>
+                    <div class="user-dropdown">
+                        <a href="workout-logger.html" class="dropdown-item">
+                            <i class="fas fa-dumbbell"></i> Workout Logger
+                        </a>
+                        <a href="progress-monitoring.html" class="dropdown-item">
+                            <i class="fas fa-chart-line"></i> Progress Monitoring
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a href="#" class="dropdown-item" id="logoutBtn">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="progress-monitoring">
+        <div class="container">
+            <header class="page-header">
+                <h1>Progress Monitoring</h1>
+                <p class="subtitle">Track your gains and visualize your progress over time</p>
+            </header>
+
+            <div class="progress-content">
+                <div class="filters-panel">
+                    <div class="filter-group">
+                        <label for="viewType">View Type</label>
+                        <select id="viewType">
+                            <option value="muscleGroup">By Muscle Group</option>
+                            <option value="compound">By Compound Exercise</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group" id="muscleGroupFilter">
+                        <label for="muscleGroup">Muscle Group</label>
+                        <select id="muscleGroup">
+                            <option value="chest">Chest</option>
+                            <option value="back">Back</option>
+                            <option value="legs">Legs</option>
+                            <option value="shoulders">Shoulders</option>
+                            <option value="arms">Arms</option>
+                            <option value="core">Core</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group" id="compoundFilter" style="display: none;">
+                        <label for="compoundExercise">Compound Exercise</label>
+                        <select id="compoundExercise">
+                            <option value="all">All Compounds</option>
+                            <option value="Bench Press">Bench Press</option>
+                            <option value="Squats">Squats</option>
+                            <option value="Deadlifts">Deadlifts</option>
+                            <option value="Military Press">Military Press</option>
+                            <option value="Pull-Ups">Pull-Ups</option>
+                            <option value="Barbell Rows">Barbell Rows</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="timeRange">Time Range</label>
+                        <select id="timeRange">
+                            <option value="2weeks">Last 2 Weeks</option>
+                            <option value="1month">Last Month</option>
+                            <option value="3months">Last 3 Months</option>
+                            <option value="6months">Last 6 Months</option>
+                            <option value="1year">Last Year</option>
+                            <option value="all">All Time</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label for="weightUnit">Weight Unit</label>
+                        <select id="weightUnit">
+                            <option value="kg">Kilograms (kg)</option>
+                            <option value="lbs">Pounds (lbs)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="filter-hint" id="compoundHint" style="display: none;">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Select "All Compounds" to compare progress between different compound lifts</span>
+                </div>
+
+                <div class="graph-container">
+                    <div class="graph-wrapper">
+                        <canvas id="progressChart"></canvas>
+                    </div>
+                    <div class="strength-info">
+                        <i class="fas fa-info-circle"></i>
+                        <span>1RM = Weight × (36 ÷ (37 - Reps)) [Brzycki Formula]</span>
+                    </div>
+                    <div class="goal-info">
+                        <i class="fas fa-bullseye"></i>
+                        <span>Dotted lines show goal projections from your current strength to target 1RM</span>
+                    </div>
+                    <div class="no-data-message" style="display: none;">
+                        <i class="fas fa-chart-line"></i>
+                        <p>No workout data found for the selected filters. Log some workouts to see your progress here!
+                        </p>
+                    </div>
+                </div>
+
+                <div class="stats-panel">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-arrow-trend-up"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Strongest Lift</h3>
+                            <p id="strongestLift">-</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Most Progress</h3>
+                            <p id="mostProgress">-</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Best Workout</h3>
+                            <p id="bestWorkout">-</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script type="module" src="js/main.js"></script>
+    <script type="module" src="js/progress-monitoring.js"></script>
+    <script type="module" src="js/ui-interactions.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Goal Setting - Double Kings Fitness</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/background.css">
+    <link rel="stylesheet" href="styles/goal-setting.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <!-- Chart.js for goal visualization with animation easing -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-deferred"></script>
+</head>
+
+<body>
+    <!-- Mountain Background -->
+    <div class="mountain-background">
+        <div class="stars"></div>
+        <div class="clouds"></div>
+        <div class="mountains">
+            <div class="mountain-back"></div>
+            <div class="mountain-mid"></div>
+            <div class="mountain-front"></div>
+        </div>
+    </div>
+
+    <nav class="navbar">
+        <div class="logo">
+            <div class="logo-icon">
+                <span class="crown-left"><i class="fas fa-crown"></i></span>
+                <span class="crown-right"><i class="fas fa-crown"></i></span>
+            </div>
+            <span class="logo-text">Double Kings</span>
+        </div>
+        <div class="nav-links">
+            <a href="index.html" class="nav-link">Home</a>
+            <a href="workout-logger.html" class="nav-link">Workout Logger</a>
+            <a href="progress-monitoring.html" class="nav-link">Progress Monitoring</a>
+            <a href="goal-setting.html" class="nav-link active">Goal Setting</a>
+            <div class="auth-section">
+                <div class="user-profile" id="userProfile">
+                    <span id="user-name">User</span>
+                    <i class="fas fa-chevron-down"></i>
+                    <div class="user-dropdown">
+                        <a href="workout-logger.html" class="dropdown-item">
+                            <i class="fas fa-dumbbell"></i> Workout Logger
+                        </a>
+                        <a href="progress-monitoring.html" class="dropdown-item">
+                            <i class="fas fa-chart-line"></i> Progress Monitoring
+                        </a>
+                        <a href="goal-setting.html" class="dropdown-item">
+                            <i class="fas fa-bullseye"></i> Goal Setting
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a href="#" class="dropdown-item" id="logoutBtn">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="goal-setting">
+        <div class="container">
+            <header class="page-header">
+                <h1>Goal Setting</h1>
+                <p class="subtitle">Set, track, and conquer your strength goals</p>
+                <p class="note">Set goals by specifying your target weight and reps. Progress is tracked through 1RM
+                    calculations using the Brzycki formula: weight × (36 / (37 - reps))</p>
+            </header>
+
+            <div class="goal-content">
+                <div class="goals-panel">
+                    <div class="panel-header">
+                        <h2 class="section-title">Your Strength Goals</h2>
+                        <button id="addGoalBtn" class="action-btn">
+                            <i class="fas fa-plus"></i> Add New Goal
+                        </button>
+                    </div>
+
+                    <div class="goals-grid" id="goalsGrid">
+                        <!-- Goals will be populated here dynamically -->
+                        <div class="empty-goals-message" id="emptyGoalsMessage">
+                            <i class="fas fa-bullseye"></i>
+                            <p>You haven't set any goals yet. Click "Add New Goal" to get started!</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Default goal templates -->
+                <div class="goal-templates">
+                    <h2 class="section-title">Quick Start Templates</h2>
+                    <p class="template-description">Choose a pre-set goal to quickly get started:</p>
+
+                    <div class="template-grid">
+                        <div class="template-card" data-exercise="Bench Press" data-weight="84" data-reps="5">
+                            <div class="template-icon"> <i class="fas fa-dumbbell"></i> </div>
+                            <h3>Bench Press</h3>
+                            <p>Target: 84 kg × 5 reps</p> <button class="template-btn">Use Template</button>
+                        </div>
+
+                        <div class="template-card" data-exercise="Squats" data-weight="102" data-reps="5">
+                            <div class="template-icon"> <i class="fas fa-dumbbell"></i> </div>
+                            <h3>Squats</h3>
+                            <p>Target: 102 kg × 5 reps</p> <button class="template-btn">Use Template</button>
+                        </div>
+
+                        <div class="template-card" data-exercise="Deadlifts" data-weight="143" data-reps="5">
+                            <div class="template-icon"> <i class="fas fa-dumbbell"></i> </div>
+                            <h3>Deadlifts</h3>
+                            <p>Target: 143 kg × 5 reps</p> <button class="template-btn">Use Template</button>
+                        </div>
+
+                        <div class="template-card" data-exercise="Overhead Press" data-weight="61" data-reps="3">
+                            <div class="template-icon"> <i class="fas fa-dumbbell"></i> </div>
+                            <h3>Overhead Press</h3>
+                            <p>Target: 61 kg × 3 reps</p> <button class="template-btn">Use Template</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Goal Form Modal -->
+    <div id="goalModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Create New Goal</h2>
+            <p>Set a specific and achievable strength goal</p>
+
+            <form id="goalForm">
+                <div class="form-group">
+                    <label for="exerciseSelect">Exercise</label>
+                    <select id="exerciseSelect" required>
+                        <option value="">Select Exercise</option>
+                        <option value="Bench Press">Bench Press</option>
+                        <option value="Squats">Squats</option>
+                        <option value="Deadlifts">Deadlifts</option>
+                        <option value="custom">Add Custom Exercise...</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="customExerciseGroup" style="display: none;">
+                    <label for="customExercise">Custom Exercise Name</label>
+                    <input type="text" id="customExercise" placeholder="e.g., Military Press">
+                </div>
+
+                <div class="form-group">
+                    <label for="goalWeight">Target Weight</label>
+                    <div class="input-with-unit">
+                        <input type="number" id="goalWeight" min="1" step="1" required>
+                        <select id="goalWeightUnit" required>
+                            <option value="kg">kg</option>
+                            <option value="lbs">lbs</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="goalReps">Target Reps</label>
+                    <input type="number" id="goalReps" min="1" max="30" step="1" value="5" required>
+                    <small class="form-help">The 1RM will be calculated automatically</small>
+                </div>
+
+                <div class="form-group">
+                    <label>Current Best</label>
+                    <div class="current-best-options">
+                        <div class="radio-option">
+                            <input type="radio" id="current1RMOption" name="currentBestType" value="1rm" checked>
+                            <label for="current1RMOption">1RM</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="currentRepsOption" name="currentBestType" value="reps">
+                            <label for="currentRepsOption">Weight × Reps</label>
+                        </div>
+                    </div>
+
+                    <div id="current1RMInputGroup">
+                        <div class="input-with-unit">
+                            <input type="number" id="currentWeight" min="0" step="1" required>
+                            <span id="weightUnit">kg</span>
+                        </div>
+                        <small class="form-help">Calculated using Brzycki formula from your workout logs</small>
+                    </div>
+
+                    <div id="currentRepsInputGroup" style="display: none;">
+                        <div class="input-group-row">
+                            <div class="input-with-unit">
+                                <input type="number" id="currentBestWeight" min="0" step="1" placeholder="Weight"
+                                    required>
+                                <span id="currentWeightUnit">kg</span>
+                            </div>
+                            <div class="input-with-label">
+                                <input type="number" id="currentBestReps" min="1" max="30" step="1" placeholder="Reps"
+                                    required>
+                                <span>reps</span>
+                            </div>
+                        </div>
+                        <small class="form-help">Your current best set for this exercise</small>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="timeFrameWeeks">Time Frame (Weeks)</label>
+                    <input type="number" id="timeFrameWeeks" min="1" max="52" value="12" required>
+                    <small class="form-help">How many weeks to achieve this goal?</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="goalNotes">Notes (Optional)</label>
+                    <textarea id="goalNotes" rows="3" placeholder="Additional details about your goal..."></textarea>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="submit-btn">Save Goal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script type="module" src="js/main.js"></script>
+    <script type="module" src="js/goal-setting.js"></script>
+    <script type="module" src="js/ui-interactions.js"></script>
+</body>
+
+</html>

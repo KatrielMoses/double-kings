@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Templates - Double Kings Fitness</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/background.css">
+    <link rel="stylesheet" href="styles/workout-logger.css">
+    <link rel="stylesheet" href="styles/my-templates.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <!-- Mountain Background -->
+    <div class="mountain-background">
+        <div class="stars"></div>
+        <div class="clouds"></div>
+        <div class="mountains">
+            <div class="mountain-back"></div>
+            <div class="mountain-mid"></div>
+            <div class="mountain-front"></div>
+        </div>
+    </div>
+
+    <nav class="navbar">
+        <div class="logo">
+            <div class="logo-icon">
+                <span class="crown-left"><i class="fas fa-crown"></i></span>
+                <span class="crown-right"><i class="fas fa-crown"></i></span>
+            </div>
+            <span class="logo-text">Double Kings</span>
+        </div>
+        <div class="nav-links">
+            <a href="index.html" class="nav-link">Home</a>
+            <a href="workout-logger.html" class="nav-link">Workout Logger</a>
+            <a href="my-templates.html" class="nav-link active">My Templates</a>
+            <a href="progress-monitoring.html" class="nav-link">Progress Monitoring</a>
+            <a href="goal-setting.html" class="nav-link">Goal Setting</a>
+            <div class="auth-section">
+                <div class="user-profile" id="userProfile">
+                    <span id="user-name">User</span>
+                    <i class="fas fa-chevron-down"></i>
+                    <div class="user-dropdown">
+                        <a href="workout-logger.html" class="dropdown-item">
+                            <i class="fas fa-dumbbell"></i> Workout Logger
+                        </a>
+                        <a href="progress-monitoring.html" class="dropdown-item">
+                            <i class="fas fa-chart-line"></i> Progress Monitoring
+                        </a>
+                        <a href="goal-setting.html" class="dropdown-item">
+                            <i class="fas fa-bullseye"></i> Goal Setting
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a href="#" class="dropdown-item" id="logoutBtn">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="templates-manager">
+        <div class="container">
+            <header class="page-header">
+                <h1>My Workout Templates</h1>
+                <p class="subtitle">Create and manage your workout templates</p>
+            </header>
+
+            <div class="templates-content">
+                <div class="templates-grid">
+                    <!-- Built-in Templates Section -->
+                    <div class="templates-section">
+                        <h2 class="section-title">Built-in Templates</h2>
+                        <div class="template-cards" id="builtInTemplates">
+                            <!-- Template cards will be added here -->
+                        </div>
+                    </div>
+
+                    <!-- Custom Templates Section -->
+                    <div class="templates-section">
+                        <h2 class="section-title">
+                            My Custom Templates
+                            <button id="createTemplate" class="create-template-btn">
+                                <i class="fas fa-plus"></i> Create New Template
+                            </button>
+                        </h2>
+                        <div class="template-cards" id="customTemplates">
+                            <!-- Custom template cards will be added here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Template Editor Modal -->
+    <div class="modal" id="templateEditorModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Edit Template</h2>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="templateForm">
+                    <div class="form-group">
+                        <label for="templateName">Template Name</label>
+                        <input type="text" id="templateName" required placeholder="e.g., My Push Day">
+                    </div>
+
+                    <div class="exercises-list" id="exercisesList">
+                        <!-- Exercise items will be added here -->
+                    </div>
+
+                    <button type="button" id="addExercise" class="add-exercise-btn">
+                        <i class="fas fa-plus"></i> Add Exercise
+                    </button>
+
+                    <div class="form-actions">
+                        <button type="button" class="cancel-btn">Cancel</button>
+                        <button type="submit" class="save-btn">Save Template</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/main.js"></script>
+    <script src="js/workout-templates.js"></script>
+    <script src="js/template-manager.js"></script>
+</body>
+
+</html>
