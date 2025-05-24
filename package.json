@@ -1,13 +1,43 @@
 {
     "name": "fitness-website",
     "version": "1.0.0",
-    "description": "Double Kings Fitness Website",
-    "main": "server.js",
+    "description": "Modern fitness tracking website with Supabase backend - Track workouts, monitor progress, and achieve your goals",
+    "main": "index.html",
     "scripts": {
-        "start": "node server.js"
+        "start": "node server.js",
+        "dev": "node server.js",
+        "build": "echo 'No build step required for static site'",
+        "test": "echo 'No tests specified'"
+    },
+    "keywords": [
+        "fitness",
+        "workout",
+        "tracking",
+        "exercise",
+        "health",
+        "supabase",
+        "javascript",
+        "html",
+        "css"
+    ],
+    "author": "Fitness Website Developer",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/YOUR_USERNAME/fitness-website.git"
+    },
+    "homepage": "https://github.com/YOUR_USERNAME/fitness-website#readme",
+    "engines": {
+        "node": ">=16.0.0"
     },
     "dependencies": {
-        "@supabase/supabase-js": "^2.49.8",
+        "@supabase/supabase-js": "^2.38.0",
         "express": "^4.18.2"
-    }
+    },
+    "devDependencies": {},
+    "browserslist": [
+        "> 1%",
+        "last 2 versions",
+        "not dead"
+    ]
 }
