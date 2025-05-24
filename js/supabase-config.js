@@ -1,11 +1,9 @@
-import { createClient } from '@supabase/supabase-js'
-
 // Replace these with your actual Supabase project credentials
 const supabaseUrl = 'https://xpfnxpbshviqqukjrrub.supabase.co' // https://xxxxx.supabase.co
-const supabaseKey = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhwZm54cGJzaHZpcXF1a2pycnViIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwODI4OTUsImV4cCI6MjA2MzY1ODg5NX0.ptRfVP5hjrV6o5bKZ7HFeIY7jKPzxw6S0SlubYliHiQ // eyJhbGc...
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhwZm54cGJzaHZpcXF1a2pycnViIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwODI4OTUsImV4cCI6MjA2MzY1ODg5NX0.ptRfVP5hjrV6o5bKZ7HFeIY7jKPzxw6S0SlubYliHiQ' // eyJhbGc...
 
-// Create Supabase client
-export const supabase = createClient(supabaseUrl, supabaseKey)
+// Create Supabase client (using global supabase from CDN)
+export const supabase = window.supabase.createClient(supabaseUrl, supabaseKey)
 
 // Auth helper functions
 export const auth = {
