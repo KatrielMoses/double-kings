@@ -1,6 +1,4 @@
 {
-    "version": 2,
-    "name": "fitness-website",
     "headers": [
         {
             "source": "/(.*)",
@@ -12,14 +10,8 @@
                 {
                     "key": "X-Content-Type-Options",
                     "value": "nosniff"
-                },
-                {
-                    "key": "X-XSS-Protection",
-                    "value": "1; mode=block"
                 }
             ]
         }
-    ],
-    "cleanUrls": true,
-    "trailingSlash": false
+    ]
 }
