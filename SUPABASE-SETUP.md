@@ -41,7 +41,7 @@ https://double-kings-pzhb.vercel.app
 http://localhost:3001
 ```
 
-**Authorized redirect URIs**:
+**Authorized redirect URIs** (⚠️ **EXACT MATCH REQUIRED** - NO trailing slashes):
 ```
 https://xpfnxpbshviqqukjrrub.supabase.co/auth/v1/callback
 ```
@@ -53,21 +53,45 @@ https://xpfnxpbshviqqukjrrub.supabase.co/auth/v1/callback
 3. Paste both into your Supabase Google provider settings
 4. Save the configuration
 
+## 🚨 TROUBLESHOOTING: redirect_uri_mismatch Error
+
+If you're getting `Error 400: redirect_uri_mismatch`, here's the fix:
+
+### **Common Causes:**
+1. **Trailing slash** - Remove any `/` at the end of redirect URIs
+2. **Wrong protocol** - Make sure it's `https://` not `http://` for production
+3. **Typo in URL** - Double-check every character matches exactly
+
+### **Exact URLs to Use:**
+
+**In Google Cloud Console → Authorized redirect URIs:**
+```
+https://xpfnxpbshviqqukjrrub.supabase.co/auth/v1/callback
+```
+
+**In Google Cloud Console → Authorized JavaScript origins:**
+```
+https://double-kings-pzhb.vercel.app
+http://localhost:3001
+```
+
+### **How to Fix:**
+1. Go to [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
+2. Click on your OAuth 2.0 client ID
+3. Under **Authorized redirect URIs**, make sure you have **EXACTLY**:
+   ```
+   https://xpfnxpbshviqqukjrrub.supabase.co/auth/v1/callback
+   ```
+4. Click **Save**
+5. Wait 5-10 minutes for changes to propagate
+6. Try Google sign-in again
+
 ## Step 4: Test the Integration
 
 Once configured, the Google sign-in buttons should work:
 - Users can sign in with their Google accounts
 - User profiles are automatically created in Supabase
 - Authentication state is managed by Supabase
-
-## Troubleshooting
-
-If Google sign-in still doesn't work:
-
-1. **Check the browser console** for error messages
-2. **Verify redirect URLs** match exactly between Google and Supabase
-3. **Ensure the Google+ API is enabled** in Google Cloud Console
-4. **Check that your domain is authorized** in both systems
 
 ## Current Status
 

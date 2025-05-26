@@ -1,38 +1,50 @@
-// Goal Setting Page
-document.addEventListener('DOMContentLoaded', () => {
-    // Authentication check
-    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-    const userName = document.getElementById('user-name');
-    const logoutBtn = document.getElementById('logoutBtn');
+import { auth, db, supabase } from './supabase-config.js';
 
-    if (!isLoggedIn) {
-        // Redirect to home if not logged in
+// Global variables
+let currentUser = null;
+
+// Goal Setting Page
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        // Check authentication with Supabase
+        currentUser = await auth.getCurrentUser();
+
+        if (!currentUser) {
+            alert('Please log in to access Goal Setting');
+            window.location.href = 'index.html';
+            return;
+        }
+
+        // Get user profile for preferences
+        const userProfile = await db.getUserProfile(currentUser.id);
+        const userName = document.getElementById('user-name');
+        const logoutBtn = document.getElementById('logoutBtn');
+
+        // Update user name
+        if (userName && userProfile?.name) {
+            userName.textContent = userProfile.name;
+        }
+
+        // Add logout functionality
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                await auth.signOut();
+                window.location.href = 'index.html';
+            });
+        }
+
+        // Initialize the goal setting functionality
+        await initGoalSetting(userProfile);
+
+    } catch (error) {
+        console.error('Error initializing goal setting:', error);
         alert('Please log in to access Goal Setting');
         window.location.href = 'index.html';
-        return;
     }
-
-    // Update user name
-    if (userName && userData.name) {
-        userName.textContent = userData.name;
-    }
-
-    // Add logout functionality
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', (e) => {
-            e.preventDefault(); // Prevent the link from navigating
-            localStorage.removeItem('isLoggedIn');
-            localStorage.removeItem('userData');
-            window.location.href = 'index.html';
-        });
-    }
-
-    // Initialize the goal setting functionality
-    initGoalSetting();
 });
 
-function initGoalSetting() {
+async function initGoalSetting(userProfile) {
     // DOM Elements
     const addGoalBtn = document.getElementById('addGoalBtn');
     const goalModal = document.getElementById('goalModal');
@@ -199,19 +211,19 @@ function initGoalSetting() {
 
     // Handle template button clicks with animation
     templateBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
+        btn.addEventListener('click', async () => {
             const card = btn.closest('.template-card');
 
             // Add pulse animation to card
             card.style.animation = 'pulse 0.5s ease';
 
-            setTimeout(() => {
+            setTimeout(async () => {
                 const exercise = card.dataset.exercise;
                 const weight = card.dataset.weight ? parseInt(card.dataset.weight) : 0;
                 const reps = card.dataset.reps ? parseInt(card.dataset.reps) : 5;
 
                 // Find current 1RM for this exercise from workout data
-                const current = getCurrentBestForExercise(exercise);
+                const current = await getCurrentBestForExercise(exercise);
 
                 // Fill in the form
                 goalForm.reset();
@@ -259,7 +271,7 @@ function initGoalSetting() {
     }
 
     // Handle form submission for creating/editing goals
-    goalForm.addEventListener('submit', (e) => {
+    goalForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
         // Get form values
@@ -294,9 +306,9 @@ function initGoalSetting() {
 
         // Create or update goal
         if (editingGoalId) {
-            updateGoal(editingGoalId, exercise, target1RM, targetWeight, targetReps, current, unit, deadline, weeks, notes);
+            await updateGoal(editingGoalId, exercise, target1RM, targetWeight, targetReps, current, unit, deadline, weeks, notes);
         } else {
-            createGoal(exercise, target1RM, targetWeight, targetReps, current, unit, deadline, weeks, notes);
+            await createGoal(exercise, target1RM, targetWeight, targetReps, current, unit, deadline, weeks, notes);
         }
 
         // Hide modal with animation
@@ -304,179 +316,220 @@ function initGoalSetting() {
     });
 
     // Function to create a new goal
-    function createGoal(exercise, target1RM, targetWeight, targetReps, current, unit, deadline, weeks, notes) {
-        // Generate unique ID
-        const goalId = 'goal_' + Date.now();
+    async function createGoal(exercise, target1RM, targetWeight, targetReps, current, unit, deadline, weeks, notes) {
+        try {
+            // Create goal object for Supabase
+            const goalData = {
+                user_id: currentUser.id,
+                exercise_name: exercise,
+                target_1rm: target1RM,
+                target_weight: targetWeight,
+                target_reps: targetReps,
+                current_1rm: current,
+                weight_unit: unit,
+                deadline: deadline.toISOString().split('T')[0], // Format as YYYY-MM-DD
+                weeks,
+                notes: notes || null,
+                history: JSON.stringify([{
+                    date: new Date().toISOString(),
+                    value: current
+                }])
+            };
 
-        // Create goal object
-        const goal = {
-            id: goalId,
-            exercise,
-            target1RM,
-            targetWeight,
-            targetReps,
-            current,
-            unit,
-            created: new Date(),
-            deadline,
-            weeks,
-            notes,
-            history: [{
-                date: new Date(),
-                value: current
-            }]
-        };
+            // Save to Supabase
+            const result = await db.saveGoal(goalData);
 
-        // Save to localStorage
-        const goals = getGoals();
-        goals.push(goal);
-        saveGoals(goals);
+            if (result.success) {
+                // Add to UI with the returned data
+                const goal = {
+                    id: result.data[0].id,
+                    exercise: result.data[0].exercise_name,
+                    target1RM: result.data[0].target_1rm,
+                    targetWeight: result.data[0].target_weight,
+                    targetReps: result.data[0].target_reps,
+                    current: result.data[0].current_1rm,
+                    unit: result.data[0].weight_unit,
+                    created: new Date(result.data[0].created_at),
+                    deadline: new Date(result.data[0].deadline),
+                    weeks: result.data[0].weeks,
+                    notes: result.data[0].notes,
+                    history: JSON.parse(result.data[0].history || '[]')
+                };
 
-        // Add to UI
-        renderGoal(goal);
-        updateEmptyMessage();
+                await renderGoal(goal);
+                await updateEmptyMessage();
 
-        // Delay animation of progress bars
-        setTimeout(animateProgressBars, 100);
+                // Delay animation of progress bars
+                setTimeout(animateProgressBars, 100);
+            } else {
+                alert('Error creating goal: ' + result.error);
+            }
+        } catch (error) {
+            console.error('Error creating goal:', error);
+            alert('Error creating goal. Please try again.');
+        }
     }
 
     // Function to update an existing goal
-    function updateGoal(goalId, exercise, target1RM, targetWeight, targetReps, current, unit, deadline, weeks, notes) {
-        // Get existing goals
-        const goals = getGoals();
+    async function updateGoal(goalId, exercise, target1RM, targetWeight, targetReps, current, unit, deadline, weeks, notes) {
+        try {
+            // Get existing goal to check if current value changed
+            const goals = await getGoals();
+            const existingGoal = goals.find(g => g.id === goalId);
 
-        // Find the goal to update
-        const goalIndex = goals.findIndex(g => g.id === goalId);
-        if (goalIndex === -1) return;
+            if (!existingGoal) return;
 
-        const goal = goals[goalIndex];
+            let history = existingGoal.history;
 
-        // Check if current value changed
-        if (current !== goal.current) {
-            // Add to history if value changed
-            goal.history.push({
-                date: new Date(),
-                value: current
-            });
+            // Check if current value changed
+            if (current !== existingGoal.current) {
+                // Add to history if value changed
+                history.push({
+                    date: new Date().toISOString(),
+                    value: current
+                });
+            }
+
+            // Update goal data
+            const updates = {
+                exercise_name: exercise,
+                target_1rm: target1RM,
+                target_weight: targetWeight,
+                target_reps: targetReps,
+                current_1rm: current,
+                weight_unit: unit,
+                deadline: deadline.toISOString().split('T')[0],
+                weeks,
+                notes: notes || null,
+                history: JSON.stringify(history)
+            };
+
+            // Update in Supabase
+            const result = await db.updateGoal(goalId, updates);
+
+            if (result.success) {
+                // Update UI
+                clearGoalsGrid();
+                await renderAllGoals();
+
+                // Delay animation of progress bars
+                setTimeout(animateProgressBars, 100);
+            } else {
+                alert('Error updating goal: ' + result.error);
+            }
+        } catch (error) {
+            console.error('Error updating goal:', error);
+            alert('Error updating goal. Please try again.');
         }
-
-        // Update goal properties
-        goal.exercise = exercise;
-        goal.target1RM = target1RM;
-        goal.targetWeight = targetWeight;
-        goal.targetReps = targetReps;
-        goal.current = current;
-        goal.unit = unit;
-        goal.deadline = deadline;
-        goal.weeks = weeks;
-        goal.notes = notes;
-
-        // Save to localStorage
-        saveGoals(goals);
-
-        // Update UI
-        clearGoalsGrid();
-        renderAllGoals();
-
-        // Delay animation of progress bars
-        setTimeout(animateProgressBars, 100);
     }
 
     // Function to delete a goal
-    function deleteGoal(goalId) {
+    async function deleteGoal(goalId) {
         if (confirm('Are you sure you want to delete this goal?')) {
-            // Get the goal element
-            const goalElement = document.getElementById(goalId);
+            try {
+                // Get the goal element
+                const goalElement = document.getElementById(goalId);
 
-            // Add fade out animation
-            if (goalElement) {
-                goalElement.style.animation = 'fadeOut 0.5s ease forwards';
+                // Add fade out animation
+                if (goalElement) {
+                    goalElement.style.animation = 'fadeOut 0.5s ease forwards';
 
-                // Wait for animation to complete before removing
-                setTimeout(() => {
-                    // Get existing goals
-                    const goals = getGoals();
+                    // Wait for animation to complete before removing
+                    setTimeout(async () => {
+                        // Delete from Supabase
+                        const result = await db.deleteGoal(goalId);
 
-                    // Remove the goal
-                    const updatedGoals = goals.filter(g => g.id !== goalId);
+                        if (result.success) {
+                            // Update UI
+                            clearGoalsGrid();
+                            await renderAllGoals();
+                            updateEmptyMessage();
 
-                    // Save to localStorage
-                    saveGoals(updatedGoals);
-
-                    // Update UI
-                    clearGoalsGrid();
-                    renderAllGoals();
-                    updateEmptyMessage();
-
-                    // Animate progress bars
-                    setTimeout(animateProgressBars, 100);
-                }, 500);
-            } else {
-                // If element not found, just proceed with deletion
-                const goals = getGoals();
-                const updatedGoals = goals.filter(g => g.id !== goalId);
-                saveGoals(updatedGoals);
-                clearGoalsGrid();
-                renderAllGoals();
-                updateEmptyMessage();
-                setTimeout(animateProgressBars, 100);
+                            // Animate progress bars
+                            setTimeout(animateProgressBars, 100);
+                        } else {
+                            alert('Error deleting goal: ' + result.error);
+                            // Remove animation if deletion failed
+                            goalElement.style.animation = '';
+                        }
+                    }, 500);
+                } else {
+                    // If element not found, just proceed with deletion
+                    const result = await db.deleteGoal(goalId);
+                    if (result.success) {
+                        clearGoalsGrid();
+                        await renderAllGoals();
+                        updateEmptyMessage();
+                        setTimeout(animateProgressBars, 100);
+                    } else {
+                        alert('Error deleting goal: ' + result.error);
+                    }
+                }
+            } catch (error) {
+                console.error('Error deleting goal:', error);
+                alert('Error deleting goal. Please try again.');
             }
         }
     }
 
     // Function to edit a goal (open modal with goal data)
-    function editGoal(goalId) {
-        // Add highlight animation to the goal card
-        const goalCard = document.getElementById(goalId);
-        if (goalCard) {
-            goalCard.classList.add('editing');
-            setTimeout(() => goalCard.classList.remove('editing'), 1000);
+    async function editGoal(goalId) {
+        try {
+            // Add highlight animation to the goal card
+            const goalCard = document.getElementById(goalId);
+            if (goalCard) {
+                goalCard.classList.add('editing');
+                setTimeout(() => goalCard.classList.remove('editing'), 1000);
+            }
+
+            // Get goal data
+            const goals = await getGoals();
+            const goal = goals.find(g => g.id === goalId);
+            if (!goal) return;
+
+            // Set editing mode
+            editingGoalId = goalId;
+
+            // Fill form with goal data
+            if (exerciseSelect.querySelector(`option[value="${goal.exercise}"]`)) {
+                exerciseSelect.value = goal.exercise;
+                customExerciseGroup.style.display = 'none';
+                customExercise.removeAttribute('required');
+            } else {
+                exerciseSelect.value = 'custom';
+                customExerciseGroup.style.display = 'block';
+                customExercise.setAttribute('required', true);
+                customExercise.value = goal.exercise;
+            }
+
+            // Set weights and reps
+            goalWeight.value = goal.targetWeight || '';
+            goalReps.value = goal.targetReps || 5;
+
+            currentWeight.value = goal.current;
+            goalWeightUnit.value = goal.unit;
+            weightUnit.textContent = goal.unit;
+            currentWeightUnit.textContent = goal.unit;
+
+            // Set time frame
+            timeFrameWeeks.value = goal.weeks || 12;
+
+            goalNotes.value = goal.notes || '';
+
+            // Show modal with animation
+            goalModal.style.display = 'block';
+            goalModal.style.opacity = '0';
+            setTimeout(() => {
+                goalModal.style.opacity = '1';
+            }, 10);
+        } catch (error) {
+            console.error('Error editing goal:', error);
+            alert('Error loading goal data. Please try again.');
         }
-
-        // Get goal data
-        const goals = getGoals();
-        const goal = goals.find(g => g.id === goalId);
-        if (!goal) return;
-
-        // Set editing mode
-        editingGoalId = goalId;
-
-        // Fill form with goal data
-        if (exerciseSelect.querySelector(`option[value="${goal.exercise}"]`)) {
-            exerciseSelect.value = goal.exercise;
-            customExerciseGroup.style.display = 'none';
-            customExercise.removeAttribute('required');
-        } else {
-            exerciseSelect.value = 'custom';
-            customExerciseGroup.style.display = 'block';
-            customExercise.setAttribute('required', true);
-            customExercise.value = goal.exercise;
-        }
-
-        // Set weights and reps
-        goalWeight.value = goal.targetWeight || '';
-        goalReps.value = goal.targetReps || 5;
-
-        currentWeight.value = goal.current;
-        goalWeightUnit.value = goal.unit;
-        weightUnit.textContent = goal.unit;
-        currentWeightUnit.textContent = goal.unit;
-
-        // Set time frame
-        timeFrameWeeks.value = goal.weeks || 12;
-
-        goalNotes.value = goal.notes || '';
-
-        // Show modal with animation
-        goalModal.style.display = 'block';
-        goalModal.style.opacity = '0';
-        setTimeout(() => {
-            goalModal.style.opacity = '1';
-        }, 10);
     }
 
     // Function to render a single goal card
-    function renderGoal(goal) {
+    async function renderGoal(goal) {
         // Calculate progress percentage
         const progress = calculateProgress(goal);
         const progressPercentage = Math.min(Math.round(progress * 100), 100);
@@ -580,13 +633,13 @@ function initGoalSetting() {
             </div>
         `;
 
-        // Add event listeners for edit and delete buttons
-        goalCard.querySelector('.btn-edit').addEventListener('click', () => {
-            editGoal(goal.id);
+        // Add event listeners for action buttons
+        goalCard.querySelector('.btn-edit').addEventListener('click', async () => {
+            await editGoal(goal.id);
         });
 
-        goalCard.querySelector('.btn-delete').addEventListener('click', () => {
-            deleteGoal(goal.id);
+        goalCard.querySelector('.btn-delete').addEventListener('click', async () => {
+            await deleteGoal(goal.id);
         });
 
         // Add to grid
@@ -723,39 +776,34 @@ function initGoalSetting() {
         });
     }
 
-    // Get current best weight for an exercise from workout data
-    function getCurrentBestForExercise(exercise) {
+    // Get current best weight for an exercise from Supabase workout data
+    async function getCurrentBestForExercise(exercise) {
         try {
-            // Get workouts from localStorage
-            const workouts = JSON.parse(localStorage.getItem('workouts')) || [];
+            // Get workouts from Supabase
+            const workouts = await db.getWorkouts(currentUser.id);
             let maxOneRepMax = 0;
 
             // Loop through all workouts to find the exercise
-            workouts.forEach(workoutHTML => {
-                // Check if this workout is for the requested exercise
-                if (workoutHTML.includes(`<strong>${exercise}</strong>`)) {
-                    // Extract sets data
-                    const setRegex = /Set \d+: (\d+) reps @ ([\d.]+) (lbs|kg)/g;
-                    let match;
-
-                    while ((match = setRegex.exec(workoutHTML)) !== null) {
-                        const reps = parseInt(match[1], 10);
-                        const weight = parseFloat(match[2]);
-                        const unit = match[3];
+            workouts.forEach(workout => {
+                if (workout.exercise_name === exercise && workout.sets) {
+                    workout.sets.forEach(set => {
+                        const reps = parseInt(set.reps);
+                        const weight = parseFloat(set.weight);
+                        const unit = workout.weight_unit;
 
                         // Skip if reps are beyond Brzycki formula range (37 or more)
-                        if (reps >= 37) continue;
+                        if (reps >= 37) return;
 
                         // Calculate 1RM using Brzycki formula: weight × (36 / (37 - reps))
                         const oneRepMax = weight * (36 / (37 - reps));
 
-                        // Convert to lbs if needed
-                        const oneRepMaxInLbs = unit === 'kg' ? oneRepMax * 2.20462 : oneRepMax;
+                        // Convert to kg for consistency
+                        const oneRepMaxInKg = unit === 'lbs' ? oneRepMax / 2.20462 : oneRepMax;
 
-                        if (oneRepMaxInLbs > maxOneRepMax) {
-                            maxOneRepMax = oneRepMaxInLbs;
+                        if (oneRepMaxInKg > maxOneRepMax) {
+                            maxOneRepMax = oneRepMaxInKg;
                         }
-                    }
+                    });
                 }
             });
 
@@ -766,25 +814,41 @@ function initGoalSetting() {
         }
     }
 
-    // Get all goals from localStorage
-    function getGoals() {
-        return JSON.parse(localStorage.getItem('goals')) || [];
-    }
+    // Get all goals from Supabase
+    async function getGoals() {
+        try {
+            const goals = await db.getGoals(currentUser.id);
 
-    // Save goals to localStorage
-    function saveGoals(goals) {
-        localStorage.setItem('goals', JSON.stringify(goals));
+            // Convert Supabase format to local format
+            return goals.map(goal => ({
+                id: goal.id,
+                exercise: goal.exercise_name,
+                target1RM: goal.target_1rm,
+                targetWeight: goal.target_weight,
+                targetReps: goal.target_reps,
+                current: goal.current_1rm,
+                unit: goal.weight_unit,
+                created: new Date(goal.created_at),
+                deadline: new Date(goal.deadline),
+                weeks: goal.weeks,
+                notes: goal.notes,
+                history: JSON.parse(goal.history || '[]')
+            }));
+        } catch (error) {
+            console.error('Error getting goals:', error);
+            return [];
+        }
     }
 
     // Render all goals
-    function renderAllGoals() {
-        const goals = getGoals();
+    async function renderAllGoals() {
+        const goals = await getGoals();
         goals.forEach(goal => renderGoal(goal));
     }
 
     // Update empty message visibility
-    function updateEmptyMessage() {
-        const goals = getGoals();
+    async function updateEmptyMessage() {
+        const goals = await getGoals();
         if (goals.length === 0) {
             emptyGoalsMessage.style.display = 'block';
         } else {
@@ -830,8 +894,8 @@ function initGoalSetting() {
     }
 
     // Initialize
-    renderAllGoals();
-    updateEmptyMessage();
+    await renderAllGoals();
+    await updateEmptyMessage();
     addAnimationCSS();
     addHoverEffects();
 

@@ -1,33 +1,51 @@
-// Progress Monitoring
-document.addEventListener('DOMContentLoaded', () => {
-    // Authentication check
-    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-    const userName = document.getElementById('user-name');
-    const logoutBtn = document.getElementById('logoutBtn');
+import { auth, db, supabase } from './supabase-config.js';
 
-    if (!isLoggedIn) {
-        // Redirect to home if not logged in
+// Global variables
+let currentUser = null;
+
+// Progress Monitoring
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        // Check authentication with Supabase
+        currentUser = await auth.getCurrentUser();
+
+        if (!currentUser) {
+            alert('Please log in to access Progress Monitoring');
+            window.location.href = 'index.html';
+            return;
+        }
+
+        // Get user profile for preferences
+        const userProfile = await db.getUserProfile(currentUser.id);
+        const userName = document.getElementById('user-name');
+        const logoutBtn = document.getElementById('logoutBtn');
+
+        // Update user name
+        if (userName && userProfile?.name) {
+            userName.textContent = userProfile.name;
+        }
+
+        // Add logout functionality
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                await auth.signOut();
+                window.location.href = 'index.html';
+            });
+        }
+
+        // Initialize the page after authentication is confirmed
+        initializeProgressMonitoring(userProfile);
+
+    } catch (error) {
+        console.error('Error initializing progress monitoring:', error);
         alert('Please log in to access Progress Monitoring');
         window.location.href = 'index.html';
-        return;
     }
+});
 
-    // Update user name
-    if (userName && userData.name) {
-        userName.textContent = userData.name;
-    }
-
-    // Add logout functionality
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', (e) => {
-            e.preventDefault(); // Prevent the link from navigating
-            localStorage.removeItem('isLoggedIn');
-            localStorage.removeItem('userData');
-            window.location.href = 'index.html';
-        });
-    }
-
+// Initialize progress monitoring functionality
+function initializeProgressMonitoring(userProfile) {
     // Style select dropdowns for Firefox compatibility
     const allSelects = document.querySelectorAll('select');
     allSelects.forEach(select => {
@@ -65,7 +83,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // Chart instance
     let progressChart = null;
 
-    // Initialize with user's preferred weight unit    const userPreferredUnit = localStorage.getItem('preferredWeightUnit');    if (userPreferredUnit) {        weightUnitSelect.value = userPreferredUnit;    } else {        // Set default to kg if no preference is stored        weightUnitSelect.value = 'kg';        localStorage.setItem('preferredWeightUnit', 'kg');    }
+    // Initialize with user's preferred weight unit
+    if (userProfile?.preferred_weight_unit) {
+        weightUnitSelect.value = userProfile.preferred_weight_unit;
+    } else {
+        // Set default to kg if no preference is stored
+        weightUnitSelect.value = 'kg';
+    }
 
     // Exercise mapping to muscle groups
     const exerciseToMuscleGroup = {
@@ -153,95 +177,92 @@ document.addEventListener('DOMContentLoaded', () => {
         return weight * (36 / (37 - reps));
     }
 
-    // Load goals from localStorage
-    function loadGoals() {
-        const goals = JSON.parse(localStorage.getItem('goals')) || [];
-        const filteredGoals = {};
+    // Load goals from Supabase
+    async function loadGoals() {
+        try {
+            const goals = await db.getGoals(currentUser.id);
+            const filteredGoals = {};
 
-        goals.forEach(goal => {
-            // Only include goals for exercises we're tracking
-            if (exerciseToMuscleGroup[goal.exercise] || compoundExercises.includes(goal.exercise)) {
-                const selectedUnit = weightUnitSelect.value;
+            goals.forEach(goal => {
+                // Only include goals for exercises we're tracking
+                if (exerciseToMuscleGroup[goal.exercise_name] || compoundExercises.includes(goal.exercise_name)) {
+                    const selectedUnit = weightUnitSelect.value;
 
-                // Convert 1RM to selected unit if needed
-                let target1RM = goal.target1RM;
-                if (goal.unit !== selectedUnit) {
-                    target1RM = goal.unit === 'kg' ? target1RM * 2.20462 : target1RM / 2.20462;
-                }
+                    // Convert 1RM to selected unit if needed
+                    let target1RM = goal.target_1rm;
+                    if (goal.weight_unit !== selectedUnit) {
+                        target1RM = goal.weight_unit === 'kg' ? target1RM * 2.20462 : target1RM / 2.20462;
+                    }
 
-                // Convert deadline to Date object
-                const deadline = new Date(goal.deadline);
+                    // Convert deadline to Date object
+                    const deadline = new Date(goal.deadline);
 
-                // Add to filtered goals
-                if (!filteredGoals[goal.exercise]) {
-                    filteredGoals[goal.exercise] = [];
-                }
+                    // Add to filtered goals
+                    if (!filteredGoals[goal.exercise_name]) {
+                        filteredGoals[goal.exercise_name] = [];
+                    }
 
-                filteredGoals[goal.exercise].push({
-                    targetWeight: goal.targetWeight,
-                    targetReps: goal.targetReps,
-                    target1RM: target1RM,
-                    deadline: deadline,
-                    weeks: goal.weeks,
-                    current1RM: goal.current,
-                    created: new Date(goal.created)
-                });
-            }
-        });
-
-        return filteredGoals;
-    }
-
-    // Parse workout data from localStorage
-    function parseWorkoutData() {
-        const workouts = JSON.parse(localStorage.getItem('workouts')) || [];
-        const parsedData = [];
-
-        workouts.forEach(workoutHTML => {
-            try {
-                // Extract exercise name and type (using regex to parse HTML string)
-                const exerciseMatch = workoutHTML.match(/<strong>([^<]+)<\/strong> \(([^)]+)\)/);
-                if (!exerciseMatch) return;
-
-                const exercise = exerciseMatch[1];
-                const muscleGroup = exerciseMatch[2];
-
-                // Extract date
-                const dateMatch = workoutHTML.match(/<span class="workout-date">([^<]+)<\/span>/);
-                if (!dateMatch) return;
-
-                const dateStr = dateMatch[1];
-                const date = new Date(dateStr.split(' at ')[0]);
-
-                // Extract sets
-                const setRegex = /Set (\d+): (\d+) reps @ ([\d.]+) (lbs|kg)/g;
-                let match;
-                const sets = [];
-
-                while ((match = setRegex.exec(workoutHTML)) !== null) {
-                    sets.push({
-                        setNumber: parseInt(match[1]),
-                        reps: parseInt(match[2]),
-                        weight: parseFloat(match[3]),
-                        unit: match[4]
+                    filteredGoals[goal.exercise_name].push({
+                        targetWeight: goal.target_weight,
+                        targetReps: goal.target_reps,
+                        target1RM: target1RM,
+                        deadline: deadline,
+                        weeks: goal.weeks,
+                        current1RM: goal.current_1rm,
+                        created: new Date(goal.created_at)
                     });
                 }
+            });
 
-                if (sets.length === 0) return;
+            return filteredGoals;
+        } catch (error) {
+            console.error('Error loading goals:', error);
+            return {};
+        }
+    }
 
-                // Add parsed workout to data
-                parsedData.push({
-                    exercise,
-                    muscleGroup,
-                    date,
-                    sets
-                });
-            } catch (e) {
-                console.error("Error parsing workout:", e);
-            }
-        });
+    // Parse workout data from Supabase
+    async function parseWorkoutData() {
+        try {
+            const workouts = await db.getWorkouts(currentUser.id);
+            const parsedData = [];
 
-        return parsedData;
+            workouts.forEach(workout => {
+                try {
+                    // Parse the workout data from Supabase
+                    const exercise = workout.exercise_name;
+                    const muscleGroup = workout.muscle_group;
+                    const date = new Date(workout.workout_date);
+                    const sets = workout.sets; // This is already a JSON array
+                    const unit = workout.weight_unit;
+
+                    if (!sets || sets.length === 0) return;
+
+                    // Convert sets to expected format
+                    const formattedSets = sets.map((set, index) => ({
+                        setNumber: index + 1,
+                        reps: parseInt(set.reps),
+                        weight: parseFloat(set.weight),
+                        unit: unit
+                    }));
+
+                    // Add parsed workout to data
+                    parsedData.push({
+                        exercise,
+                        muscleGroup,
+                        date,
+                        sets: formattedSets
+                    });
+                } catch (e) {
+                    console.error("Error parsing workout:", e);
+                }
+            });
+
+            return parsedData;
+        } catch (error) {
+            console.error('Error fetching workout data:', error);
+            return [];
+        }
     }
 
     // Filter workouts based on selected filters
@@ -297,86 +318,105 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Prepare data for charting
-    function prepareChartData(workouts) {
+    // Filter and prepare chart data
+    async function prepareChartData(workouts) {
         const selectedUnit = weightUnitSelect.value;
         const dataset = {};
-        const goals = loadGoals();
+        const goals = await loadGoals();
 
         workouts.forEach(workout => {
-            const { exercise, date } = workout;
+            const { exercise, date, sets } = workout;
 
-            // Calculate 1RM for this workout using Brzycki formula
-            let max1RM = 0;
-            let maxWeight = 0;
-            let maxReps = 0;
-
-            workout.sets.forEach(set => {
-                // Convert weight if needed
-                let weight = set.weight;
-                if (set.unit !== selectedUnit) {
-                    weight = set.unit === 'kg' ? weight * 2.20462 : weight / 2.20462;
-                }
-
-                // Calculate 1RM using Brzycki formula
-                const oneRepMax = calculateBrzycki1RM(weight, set.reps);
-
-                if (oneRepMax > max1RM) {
-                    max1RM = oneRepMax;
-                    maxWeight = weight;
-                    maxReps = set.reps;
-                }
-            });
-
-            // Create or update dataset entry
             if (!dataset[exercise]) {
                 dataset[exercise] = [];
             }
 
-            // Add data point with date on x-axis and 1RM on y-axis
+            // Calculate the best 1RM for each workout session
+            let maxOneRM = 0;
+            sets.forEach(set => {
+                let weight = set.weight;
+                let unit = set.unit;
+
+                // Convert weight to selected unit if needed
+                if (unit !== selectedUnit) {
+                    if (selectedUnit === 'kg' && unit === 'lbs') {
+                        weight = weight / 2.20462;
+                    } else if (selectedUnit === 'lbs' && unit === 'kg') {
+                        weight = weight * 2.20462;
+                    }
+                }
+
+                const oneRM = calculateBrzycki1RM(weight, set.reps);
+                if (oneRM > maxOneRM) {
+                    maxOneRM = oneRM;
+                }
+            });
+
             dataset[exercise].push({
-                x: date,
-                y: max1RM,
-                weight: maxWeight,
-                reps: maxReps,
-                oneRepMax: max1RM.toFixed(1)
+                x: date.toISOString().split('T')[0],
+                y: parseFloat(maxOneRM.toFixed(2))
             });
         });
 
-        // Sort each exercise dataset by date
+        // Sort data points by date for each exercise
         Object.keys(dataset).forEach(exercise => {
-            dataset[exercise].sort((a, b) => a.x - b.x);
+            dataset[exercise].sort((a, b) => new Date(a.x) - new Date(b.x));
+        });
+
+        // Prepare Chart.js datasets
+        const exercises = Object.keys(dataset);
+        const colors = generateChartColors(exercises.length);
+        const datasets = exercises.map((exercise, index) => ({
+            label: exercise,
+            data: dataset[exercise],
+            borderColor: colors[index],
+            backgroundColor: colors[index] + '20',
+            fill: false,
+            tension: 0.1,
+            pointRadius: 4,
+            pointHoverRadius: 6
+        }));
+
+        // Add goal lines
+        Object.keys(goals).forEach((exercise, index) => {
+            if (goals[exercise] && goals[exercise].length > 0) {
+                const goal = goals[exercise][0]; // Use first goal for now
+                const goalData = [
+                    { x: goal.created.toISOString().split('T')[0], y: goal.target1RM },
+                    { x: goal.deadline.toISOString().split('T')[0], y: goal.target1RM }
+                ];
+
+                datasets.push({
+                    label: `${exercise} Goal`,
+                    data: goalData,
+                    borderColor: colors[index % colors.length],
+                    backgroundColor: 'transparent',
+                    borderDash: [5, 5],
+                    fill: false,
+                    pointRadius: 0,
+                    pointHoverRadius: 0
+                });
+            }
         });
 
         return {
-            workoutData: dataset,
-            goalData: goals
+            datasets: datasets
         };
     }
 
     // Generate chart colors
     function generateChartColors(count) {
-        const colors = [
-            '#3498db', '#2ecc71', '#e74c3c', '#f39c12', '#9b59b6',
-            '#1abc9c', '#d35400', '#c0392b', '#16a085', '#8e44ad'
+        const baseColors = [
+            '#e74c3c', '#3498db', '#2ecc71', '#f39c12', '#9b59b6',
+            '#1abc9c', '#e67e22', '#34495e', '#ff6b6b', '#4ecdc4',
+            '#45b7d1', '#f9ca24', '#6c5ce7', '#fd79a8', '#fdcb6e'
         ];
 
-        // Return colors from the palette or generate if needed more
-        if (count <= colors.length) {
-            return colors.slice(0, count);
+        const colors = [];
+        for (let i = 0; i < count; i++) {
+            colors.push(baseColors[i % baseColors.length]);
         }
-
-        // Generate additional colors if needed
-        const result = [...colors];
-
-        for (let i = colors.length; i < count; i++) {
-            const r = Math.floor(Math.random() * 200 + 55);
-            const g = Math.floor(Math.random() * 200 + 55);
-            const b = Math.floor(Math.random() * 200 + 55);
-            result.push(`rgb(${r}, ${g}, ${b})`);
-        }
-
-        return result;
+        return colors;
     }
 
     // Create or update the chart
@@ -723,41 +763,36 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Main function to update the chart
-    function updateChart() {
-        // Update subtitle based on view type
-        if (subtitle) {
-            if (viewTypeSelect.value === 'compound' && compoundExerciseSelect.value === 'all') {
-                subtitle.textContent = 'Compare your progress across all major compound lifts using Brzycki 1RM formula';
-            } else if (viewTypeSelect.value === 'compound') {
-                subtitle.textContent = `Track your ${compoundExerciseSelect.value} progress over time using Brzycki 1RM formula`;
-            } else {
-                subtitle.textContent = 'Track your strength progress over time using Brzycki formula for 1RM calculation';
+    // Update chart with current filter settings
+    async function updateChart() {
+        try {
+            // Parse and filter workout data
+            const allWorkouts = await parseWorkoutData();
+            const filteredWorkouts = filterWorkouts(allWorkouts);
+
+            if (filteredWorkouts.length === 0) {
+                // Show no data message
+                graphContainer.style.display = 'none';
+                noDataMessage.style.display = 'flex';
+                return;
             }
+
+            // Show graph container and hide no data message
+            graphContainer.style.display = 'block';
+            noDataMessage.style.display = 'none';
+
+            const chartData = await prepareChartData(filteredWorkouts);
+            createChart(chartData);
+
+            // Update stats
+            updateStats(filteredWorkouts);
+        } catch (error) {
+            console.error('Error updating chart:', error);
+            noDataMessage.style.display = 'flex';
+            graphContainer.style.display = 'none';
         }
-
-        // Parse and filter workout data
-        const allWorkouts = parseWorkoutData();
-        const filteredWorkouts = filterWorkouts(allWorkouts);
-
-        // Check if we have data to display
-        if (filteredWorkouts.length === 0) {
-            document.querySelector('.graph-wrapper').style.display = 'none';
-            noDataMessage.style.display = 'block';
-            return;
-        }
-
-        // Prepare and display data
-        document.querySelector('.graph-wrapper').style.display = 'block';
-        noDataMessage.style.display = 'none';
-
-        const chartData = prepareChartData(filteredWorkouts);
-        createChart(chartData);
-
-        // Update stats
-        updateStats(allWorkouts);
     }
 
     // Initial chart update
     updateChart();
-}); 
+} 

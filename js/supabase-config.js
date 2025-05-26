@@ -104,12 +104,59 @@ export const db = {
                 .from('user_profiles')
                 .select('*')
                 .eq('id', userId)
-                .single()
 
             if (error) throw error
-            return data
+
+            // If no profile found, try to create one
+            if (!data || data.length === 0) {
+                console.log('No user profile found, creating one...')
+                return await this.createUserProfile(userId)
+            }
+
+            return data[0] // Return first (and should be only) result
         } catch (error) {
             console.error('Get user profile error:', error)
+
+            // If error is about missing profile, try to create one
+            if (error.message && error.message.includes('no rows')) {
+                console.log('Creating missing user profile...')
+                return await this.createUserProfile(userId)
+            }
+
+            return null
+        }
+    },
+
+    async createUserProfile(userId) {
+        try {
+            // Get current user info from auth
+            const { data: { user } } = await supabase.auth.getUser()
+
+            if (!user || user.id !== userId) {
+                throw new Error('User not authenticated')
+            }
+
+            const profileData = {
+                id: userId,
+                email: user.email || '',
+                name: user.user_metadata?.full_name ||
+                    user.user_metadata?.name ||
+                    user.email?.split('@')[0] ||
+                    'User',
+                preferred_weight_unit: 'kg'
+            }
+
+            const { data, error } = await supabase
+                .from('user_profiles')
+                .insert([profileData])
+                .select()
+
+            if (error) throw error
+
+            console.log('User profile created successfully:', data[0])
+            return data[0]
+        } catch (error) {
+            console.error('Create user profile error:', error)
             return null
         }
     },
@@ -121,10 +168,9 @@ export const db = {
                 .update(updates)
                 .eq('id', userId)
                 .select()
-                .single()
 
             if (error) throw error
-            return { success: true, data }
+            return { success: true, data: data[0] }
         } catch (error) {
             console.error('Update user profile error:', error)
             return { success: false, error: error.message }
