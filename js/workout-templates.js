@@ -1,5 +1,5 @@
 // Workout split templates
-const workoutTemplates = {
+export const workoutTemplates = {
     pushPullLegs: {
         name: 'Push/Pull/Legs',
         splits: {
@@ -78,26 +78,26 @@ const workoutTemplates = {
 };
 
 // Function to load a template
-function loadWorkoutTemplate(splitType, day) {
+export function loadWorkoutTemplate(splitType, day) {
     const template = workoutTemplates[splitType]?.splits[day];
     if (!template) return null;
     return template;
 }
 
 // Function to save custom template
-function saveCustomTemplate(name, exercises) {
+export function saveCustomTemplate(name, exercises) {
     const customTemplates = JSON.parse(localStorage.getItem('customWorkoutTemplates') || '{}');
     customTemplates[name] = exercises;
     localStorage.setItem('customWorkoutTemplates', JSON.stringify(customTemplates));
 }
 
 // Function to get custom templates
-function getCustomTemplates() {
+export function getCustomTemplates() {
     return JSON.parse(localStorage.getItem('customWorkoutTemplates') || '{}');
 }
 
 // Function to load custom template
-function loadCustomTemplate(name) {
+export function loadCustomTemplate(name) {
     const customTemplates = getCustomTemplates();
     return customTemplates[name] || null;
 } 

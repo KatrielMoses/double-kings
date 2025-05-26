@@ -59,12 +59,39 @@ export const auth = {
     // Get current user
     async getCurrentUser() {
         try {
+            console.log('Supabase: Getting current session...');
+
+            // First try to get the session
             const { data: { session }, error } = await supabase.auth.getSession()
+
             if (error) {
                 console.error('Get session error:', error)
                 return null
             }
-            return session?.user || null
+
+            console.log('Supabase: Session data:', session)
+
+            if (session?.user) {
+                console.log('Supabase: User found in session:', session.user.id)
+                return session.user
+            }
+
+            // If no session, try to refresh
+            console.log('Supabase: No session found, attempting refresh...')
+            const { data: { session: refreshedSession }, error: refreshError } = await supabase.auth.refreshSession()
+
+            if (refreshError) {
+                console.error('Refresh session error:', refreshError)
+                return null
+            }
+
+            if (refreshedSession?.user) {
+                console.log('Supabase: User found after refresh:', refreshedSession.user.id)
+                return refreshedSession.user
+            }
+
+            console.log('Supabase: No user found after session checks')
+            return null
         } catch (error) {
             console.error('Get user error:', error)
             return null

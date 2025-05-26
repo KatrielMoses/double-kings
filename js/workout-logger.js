@@ -1,4 +1,5 @@
 import { auth, db, supabase } from './supabase-config.js';
+import { workoutTemplates, loadWorkoutTemplate, saveCustomTemplate, getCustomTemplates, loadCustomTemplate } from './workout-templates.js';
 
 // Global variables
 let currentUser = null;
@@ -71,16 +72,26 @@ function getLastExerciseData(exerciseName) {
 // Check if user is logged in and initialize
 document.addEventListener('DOMContentLoaded', async () => {
     try {
+        console.log('Workout Logger: Starting authentication check...');
+
+        // Add a small delay to ensure Supabase is fully initialized
+        await new Promise(resolve => setTimeout(resolve, 100));
+
         currentUser = await auth.getCurrentUser();
+        console.log('Workout Logger: Current user:', currentUser);
 
         if (!currentUser) {
+            console.log('Workout Logger: No user found, redirecting to login');
             alert('Please log in to access the Workout Logger');
             window.location.href = 'index.html';
             return;
         }
 
+        console.log('Workout Logger: User authenticated, proceeding...');
+
         // Get user profile for preferences
         const userProfile = await db.getUserProfile(currentUser.id);
+        console.log('Workout Logger: User profile:', userProfile);
 
         // Update UI with user info
         const userName = document.getElementById('user-name');
@@ -92,6 +103,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         const weightUnitSelect = document.getElementById('weightUnit');
         if (weightUnitSelect && userProfile?.preferred_weight_unit) {
             weightUnitSelect.value = userProfile.preferred_weight_unit;
+        } else if (weightUnitSelect) {
+            // Set default to kg if no preference
+            weightUnitSelect.value = 'kg';
         }
 
         // Add logout functionality
@@ -103,14 +117,19 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         }
 
+        console.log('Workout Logger: Initializing workout logger...');
         // Continue with workout logger initialization
         initWorkoutLogger();
 
         // Load existing workouts
         await loadWorkouts();
+
+        console.log('Workout Logger: Initialization complete');
     } catch (error) {
         console.error('Error initializing workout logger:', error);
-        window.location.href = 'index.html';
+        alert('Error loading workout logger. Please try refreshing the page.');
+        // Don't redirect immediately, give user a chance to refresh
+        // window.location.href = 'index.html';
     }
 });
 
@@ -417,9 +436,28 @@ function addExerciseFromPopular(exercise) {
     }, 2000);
 }
 
+// Format date for date input field (YYYY-MM-DD)
+function formatDateForInput(date) {
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
 // Initialize the workout logger
 function initWorkoutLogger() {
     console.log('Initializing workout logger...');
+
+    // Get DOM elements first (to avoid reference errors)
+    const weightUnitSelect = document.getElementById('weightUnit');
+    const workoutDateInput = document.getElementById('workoutDate');
+
+    // Set default date to today
+    const today = new Date();
+    const formattedToday = formatDateForInput(today);
+    if (workoutDateInput) {
+        workoutDateInput.value = formattedToday;
+    }
 
     // Add Exercise Button - Move this to the top to ensure it gets attached
     const addExerciseBtn = document.getElementById('addExerciseBtn');
@@ -758,12 +796,12 @@ function initWorkoutLogger() {
                     document.getElementById('sets').value = firstExercise.defaultSets;
 
                     // Generate sets with default values
-                    generateSetsBtn.click();
+                    // generateSetsBtn.click(); // Commented out - old code
 
                     // Add remaining exercises
-                    selectedTemplate.exercises.slice(1).forEach(exercise => {
-                        addExerciseToForm(exercise);
-                    });
+                    // selectedTemplate.exercises.slice(1).forEach(exercise => {
+                    //     addExerciseToForm(exercise);
+                    // }); // Commented out - old code
                 }, 100);
             }
         }, 100);
@@ -1471,10 +1509,29 @@ function initWorkoutLogger() {
 
     // Weight unit change handler
     weightUnitSelect.addEventListener('change', () => {
-        if (setsContainer.innerHTML !== '') {
-            // Regenerate set inputs if they exist
-            generateSetsBtn.click();
+        // Update user preference
+        if (currentUser) {
+            db.updateUserProfile(currentUser.id, { preferred_weight_unit: weightUnitSelect.value });
         }
+
+        // Update all existing exercise forms if any are currently visible
+        document.querySelectorAll('.sets-container').forEach(container => {
+            const weightUnit = weightUnitSelect.value;
+            const weightInputs = container.querySelectorAll('input[name="weight"]');
+            const labels = container.querySelectorAll('label');
+
+            // Update weight labels
+            labels.forEach(label => {
+                if (label.textContent.includes('Weight')) {
+                    label.textContent = `Weight (${weightUnit})`;
+                }
+            });
+
+            // Update weight inputs step
+            weightInputs.forEach(input => {
+                input.step = weightUnit === 'kg' ? 1 : 2.5;
+            });
+        });
     });
 
     // Load workouts when page loads (done in initialization)
@@ -1535,25 +1592,6 @@ function initWorkoutLogger() {
                 }
             }, 2000);
         });
-    }
-
-    // Get DOM elements
-    const weightUnitSelect = document.getElementById('weightUnit');
-    const workoutDateInput = document.getElementById('workoutDate');
-
-    // Set default date to today
-    const today = new Date();
-    const formattedToday = formatDateForInput(today);
-    if (workoutDateInput) {
-        workoutDateInput.value = formattedToday;
-    }
-
-    // Format date for date input field (YYYY-MM-DD)
-    function formatDateForInput(date) {
-        const year = date.getFullYear();
-        const month = (date.getMonth() + 1).toString().padStart(2, '0');
-        const day = date.getDate().toString().padStart(2, '0');
-        return `${year}-${month}-${day}`;
     }
 
     // Weight unit preferences are now loaded from user profile during initialization
