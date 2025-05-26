@@ -444,6 +444,69 @@ function formatDateForInput(date) {
     return `${year}-${month}-${day}`;
 }
 
+// Load workouts from Supabase - Global function
+async function loadWorkouts() {
+    try {
+        if (!currentUser) {
+            console.log('No user logged in, skipping workout load');
+            return false;
+        }
+
+        const workouts = await db.getWorkouts(currentUser.id);
+        const wkList = getWorkoutList();
+
+        // Clear existing entries
+        wkList.innerHTML = '';
+
+        console.log(`Loading ${workouts.length} workouts from Supabase`);
+
+        workouts.forEach((workout) => {
+            const workoutEntry = document.createElement('div');
+            workoutEntry.className = 'workout-entry';
+            workoutEntry.dataset.workoutId = workout.id;
+
+            // Format sets display
+            const setsDisplay = workout.sets.map(set =>
+                `${set.reps} reps @ ${set.weight} ${workout.weight_unit}`
+            ).join(', ');
+
+            workoutEntry.innerHTML = `
+                <div class="workout-entry-details">
+                    <strong>${workout.exercise_name}</strong> (${workout.muscle_group})
+                    <br>Date: ${new Date(workout.workout_date).toLocaleDateString()}
+                    <br>Sets: ${setsDisplay}
+                </div>
+                <div class="workout-entry-actions">
+                    <button class="delete-btn" title="Delete entry">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `;
+
+            // Add delete functionality
+            const deleteBtn = workoutEntry.querySelector('.delete-btn');
+            deleteBtn.addEventListener('click', async () => {
+                if (confirm('Are you sure you want to delete this workout?')) {
+                    const result = await db.deleteWorkout(workout.id);
+                    if (result.success) {
+                        workoutEntry.remove();
+                    } else {
+                        alert('Error deleting workout: ' + result.error);
+                    }
+                }
+            });
+
+            wkList.appendChild(workoutEntry);
+        });
+
+        console.log('Workouts loaded successfully');
+        return true;
+    } catch (error) {
+        console.error('Error loading workouts:', error);
+        return false;
+    }
+}
+
 // Initialize the workout logger
 function initWorkoutLogger() {
     console.log('Initializing workout logger...');
@@ -1444,69 +1507,6 @@ function initWorkoutLogger() {
         }
     }
 
-    // Load workouts from Supabase
-    async function loadWorkouts() {
-        try {
-            if (!currentUser) {
-                console.log('No user logged in, skipping workout load');
-                return false;
-            }
-
-            const workouts = await db.getWorkouts(currentUser.id);
-            const wkList = getWorkoutList();
-
-            // Clear existing entries
-            wkList.innerHTML = '';
-
-            console.log(`Loading ${workouts.length} workouts from Supabase`);
-
-            workouts.forEach((workout) => {
-                const workoutEntry = document.createElement('div');
-                workoutEntry.className = 'workout-entry';
-                workoutEntry.dataset.workoutId = workout.id;
-
-                // Format sets display
-                const setsDisplay = workout.sets.map(set =>
-                    `${set.reps} reps @ ${set.weight} ${workout.weight_unit}`
-                ).join(', ');
-
-                workoutEntry.innerHTML = `
-                    <div class="workout-entry-details">
-                        <strong>${workout.exercise_name}</strong> (${workout.muscle_group})
-                        <br>Date: ${new Date(workout.workout_date).toLocaleDateString()}
-                        <br>Sets: ${setsDisplay}
-                    </div>
-                    <div class="workout-entry-actions">
-                        <button class="delete-btn" title="Delete entry">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                `;
-
-                // Add delete functionality
-                const deleteBtn = workoutEntry.querySelector('.delete-btn');
-                deleteBtn.addEventListener('click', async () => {
-                    if (confirm('Are you sure you want to delete this workout?')) {
-                        const result = await db.deleteWorkout(workout.id);
-                        if (result.success) {
-                            workoutEntry.remove();
-                        } else {
-                            alert('Error deleting workout: ' + result.error);
-                        }
-                    }
-                });
-
-                wkList.appendChild(workoutEntry);
-            });
-
-            console.log('Workouts loaded successfully');
-            return true;
-        } catch (error) {
-            console.error('Error loading workouts:', error);
-            return false;
-        }
-    }
-
     // Weight unit change handler
     weightUnitSelect.addEventListener('change', () => {
         // Update user preference
@@ -1533,8 +1533,6 @@ function initWorkoutLogger() {
             });
         });
     });
-
-    // Load workouts when page loads (done in initialization)
 
     // Custom Exercise Addition
     const addCustomExerciseBtn = document.getElementById('addCustomExerciseBtn');
