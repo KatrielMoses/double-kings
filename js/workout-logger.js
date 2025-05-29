@@ -13,34 +13,17 @@ function getWorkoutList() {
     return workoutList;
 }
 
-// Store exercise data with user history
-function storeExerciseHistory(exerciseName, muscleGroup, sets) {
+// Store exercise data with user history - Updated to use Supabase
+async function storeExerciseHistory(exerciseName, muscleGroup, sets) {
     try {
-        // Get existing exercise history or create a new object
-        const exerciseHistory = JSON.parse(localStorage.getItem('exerciseHistory')) || {};
-
-        // Create entry for this exercise if it doesn't exist
-        if (!exerciseHistory[exerciseName]) {
-            exerciseHistory[exerciseName] = {
-                muscleGroup: muscleGroup,
-                history: []
-            };
+        if (!currentUser) {
+            console.log('No user logged in, cannot store exercise history');
+            return false;
         }
 
-        // Add new entry at the beginning of history array (most recent first)
-        exerciseHistory[exerciseName].history.unshift({
-            date: new Date().toISOString(),
-            sets: sets
-        });
-
-        // Limit history to last 10 entries to prevent excessive storage
-        if (exerciseHistory[exerciseName].history.length > 10) {
-            exerciseHistory[exerciseName].history = exerciseHistory[exerciseName].history.slice(0, 10);
-        }
-
-        // Save updated history
-        localStorage.setItem('exerciseHistory', JSON.stringify(exerciseHistory));
-        console.log(`Stored history for ${exerciseName}`);
+        // This function is now redundant since workouts are saved directly to Supabase
+        // in the logExercise function. Keeping for backward compatibility.
+        console.log(`Exercise history for ${exerciseName} is now stored directly in Supabase`);
         return true;
     } catch (error) {
         console.error('Error storing exercise history:', error);
@@ -48,18 +31,29 @@ function storeExerciseHistory(exerciseName, muscleGroup, sets) {
     }
 }
 
-// Get last used values for an exercise
-function getLastExerciseData(exerciseName) {
+// Get last used values for an exercise - Updated to use Supabase
+async function getLastExerciseData(exerciseName) {
     try {
-        const exerciseHistory = JSON.parse(localStorage.getItem('exerciseHistory')) || {};
+        if (!currentUser) {
+            console.log('No user logged in, cannot get exercise history');
+            return null;
+        }
 
-        // Check if we have history for this exercise
-        if (exerciseHistory[exerciseName] &&
-            exerciseHistory[exerciseName].history &&
-            exerciseHistory[exerciseName].history.length > 0) {
+        // Get recent workouts for this user and exercise
+        const workouts = await db.getWorkouts(currentUser.id);
 
-            // Return the most recent entry (first in the array)
-            return exerciseHistory[exerciseName].history[0];
+        // Filter for this specific exercise and sort by date
+        const exerciseWorkouts = workouts
+            .filter(workout => workout.exercise_name === exerciseName)
+            .sort((a, b) => new Date(b.workout_date) - new Date(a.workout_date));
+
+        if (exerciseWorkouts.length > 0) {
+            // Return the most recent entry
+            const mostRecent = exerciseWorkouts[0];
+            return {
+                date: mostRecent.workout_date,
+                sets: mostRecent.sets
+            };
         }
 
         return null;
@@ -1333,8 +1327,7 @@ function initWorkoutLogger() {
                 return false;
             }
 
-            // Store exercise history for future auto-fill (keep local for quick access)
-            storeExerciseHistory(exercise.exercise, exercise.muscleGroup, sets);
+            // Exercise history is now stored directly in Supabase via saveWorkout
 
             // Mark exercise as completed
             if (!window.completedExercises) {
@@ -1507,30 +1500,31 @@ function initWorkoutLogger() {
         }
     }
 
-    // Weight unit change handler
-    weightUnitSelect.addEventListener('change', () => {
-        // Update user preference
+    // Weight unit change handler - update all exercise inputs
+    weightUnitSelect.addEventListener('change', async () => {
+        const weightUnit = weightUnitSelect.value;
+        const step = weightUnit === 'kg' ? 1 : 2.5;
+
+        // Save preference to Supabase instead of localStorage
         if (currentUser) {
-            db.updateUserProfile(currentUser.id, { preferred_weight_unit: weightUnitSelect.value });
+            try {
+                await db.updateUserProfile(currentUser.id, { preferred_weight_unit: weightUnit });
+                console.log('Weight unit preference saved to Supabase');
+            } catch (error) {
+                console.error('Error saving weight unit preference:', error);
+            }
         }
 
-        // Update all existing exercise forms if any are currently visible
-        document.querySelectorAll('.sets-container').forEach(container => {
-            const weightUnit = weightUnitSelect.value;
-            const weightInputs = container.querySelectorAll('input[name="weight"]');
-            const labels = container.querySelectorAll('label');
+        // Update all weight labels
+        document.querySelectorAll('.set-input-field label').forEach(label => {
+            if (label.textContent.includes('Weight')) {
+                label.textContent = `Weight (${weightUnit})`;
+            }
+        });
 
-            // Update weight labels
-            labels.forEach(label => {
-                if (label.textContent.includes('Weight')) {
-                    label.textContent = `Weight (${weightUnit})`;
-                }
-            });
-
-            // Update weight inputs step
-            weightInputs.forEach(input => {
-                input.step = weightUnit === 'kg' ? 1 : 2.5;
-            });
+        // Update all weight inputs
+        document.querySelectorAll('input[name="weight"]').forEach(input => {
+            input.step = step;
         });
     });
 
@@ -1627,27 +1621,6 @@ function initWorkoutLogger() {
         const dateText = entry.querySelector('.workout-date').textContent;
         return new Date(dateText.split(' at ')[0]);
     }
-
-    // Weight unit change handler - update all exercise inputs
-    weightUnitSelect.addEventListener('change', () => {
-        const weightUnit = weightUnitSelect.value;
-        const step = weightUnit === 'kg' ? 1 : 2.5;
-
-        // Save preference
-        localStorage.setItem('preferredWeightUnit', weightUnit);
-
-        // Update all weight labels
-        document.querySelectorAll('.set-input-field label').forEach(label => {
-            if (label.textContent.includes('Weight')) {
-                label.textContent = `Weight (${weightUnit})`;
-            }
-        });
-
-        // Update all weight inputs
-        document.querySelectorAll('input[name="weight"]').forEach(input => {
-            input.step = step;
-        });
-    });
 
     // Add Save Workout button handler
     document.getElementById('saveWorkoutBtn').addEventListener('click', () => {

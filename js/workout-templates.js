@@ -1,3 +1,5 @@
+import { auth, db } from './supabase-config.js';
+
 // Workout split templates
 export const workoutTemplates = {
     pushPullLegs: {
@@ -84,20 +86,62 @@ export function loadWorkoutTemplate(splitType, day) {
     return template;
 }
 
-// Function to save custom template
-export function saveCustomTemplate(name, exercises) {
-    const customTemplates = JSON.parse(localStorage.getItem('customWorkoutTemplates') || '{}');
-    customTemplates[name] = exercises;
-    localStorage.setItem('customWorkoutTemplates', JSON.stringify(customTemplates));
+// Function to save custom template - Updated to use Supabase
+export async function saveCustomTemplate(name, exercises) {
+    try {
+        const currentUser = await auth.getCurrentUser();
+        if (!currentUser) {
+            throw new Error('User not authenticated');
+        }
+
+        const templateData = {
+            user_id: currentUser.id,
+            template_name: name,
+            exercises: exercises
+        };
+
+        const result = await db.saveWorkoutTemplate(templateData);
+        if (!result.success) {
+            throw new Error(result.error);
+        }
+
+        console.log('Custom template saved to Supabase');
+        return result;
+    } catch (error) {
+        console.error('Error saving custom template:', error);
+        throw error;
+    }
 }
 
-// Function to get custom templates
-export function getCustomTemplates() {
-    return JSON.parse(localStorage.getItem('customWorkoutTemplates') || '{}');
+// Function to get custom templates - Updated to use Supabase
+export async function getCustomTemplates() {
+    try {
+        const currentUser = await auth.getCurrentUser();
+        if (!currentUser) {
+            return {};
+        }
+
+        const templates = await db.getWorkoutTemplates(currentUser.id);
+        const templatesObject = {};
+
+        templates.forEach(template => {
+            templatesObject[template.template_name] = template.exercises;
+        });
+
+        return templatesObject;
+    } catch (error) {
+        console.error('Error getting custom templates:', error);
+        return {};
+    }
 }
 
-// Function to load custom template
-export function loadCustomTemplate(name) {
-    const customTemplates = getCustomTemplates();
-    return customTemplates[name] || null;
+// Function to load custom template - Updated to use Supabase
+export async function loadCustomTemplate(name) {
+    try {
+        const customTemplates = await getCustomTemplates();
+        return customTemplates[name] || null;
+    } catch (error) {
+        console.error('Error loading custom template:', error);
+        return null;
+    }
 } 

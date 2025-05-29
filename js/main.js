@@ -1,349 +1,292 @@
-import { auth, db, supabase } from './supabase-config.js';
+import { auth, db } from './supabase-config.js';
 
 let currentUser = null;
 
-// Initialize authentication
-async function initAuth() {
-    try {
-        currentUser = await auth.getCurrentUser();
-        updateUI();
+document.addEventListener('DOMContentLoaded', async () => {
+    console.log('Main app initializing...');
 
-        // Listen for auth state changes
-        auth.onAuthStateChange((event, session) => {
-            if (session) {
-                currentUser = session.user;
-                updateUI();
-            } else {
-                currentUser = null;
-                updateUI();
-            }
-        });
-    } catch (error) {
-        console.error('Error initializing auth:', error);
-    }
-}
+    // Check current authentication status
+    await checkAuthStatus();
 
-// Update UI based on authentication state
-async function updateUI() {
-    const loginBtn = document.querySelector('.login-btn');
-    const signupBtn = document.querySelector('.signup-btn');
-    const userProfile = document.querySelector('.user-profile');
-    const userName = document.getElementById('user-name');
-    const workoutLink = document.getElementById('workout-link');
-    const progressLink = document.getElementById('progress-link');
-    const goalsLink = document.getElementById('goals-link');
-
-    if (currentUser) {
-        const userProfileData = await db.getUserProfile(currentUser.id);
-
-        // Hide login/signup buttons, show user profile
-        if (loginBtn) loginBtn.style.display = 'none';
-        if (signupBtn) signupBtn.style.display = 'none';
-        if (userProfile) userProfile.style.display = 'flex';
-
-        // Update user name
-        if (userName && userProfileData?.name) {
-            userName.textContent = userProfileData.name;
-        } else if (userName && currentUser.user_metadata?.name) {
-            userName.textContent = currentUser.user_metadata.name;
-        } else if (userName && currentUser.email) {
-            userName.textContent = currentUser.email;
-        }
-
-        // Enable navigation links
-        [workoutLink, progressLink, goalsLink].forEach(link => {
-            if (link) {
-                link.classList.remove('disabled');
-                link.style.opacity = '1';
-                link.style.pointerEvents = 'all';
-            }
-        });
-
-        // Close any open modals
-        const loginModal = document.getElementById('loginModal');
-        const signupModal = document.getElementById('signupModal');
-        if (loginModal) loginModal.style.display = 'none';
-        if (signupModal) signupModal.style.display = 'none';
-    } else {
-        // User is not logged in
-        if (loginBtn) loginBtn.style.display = 'inline-block';
-        if (signupBtn) signupBtn.style.display = 'inline-block';
-        if (userProfile) userProfile.style.display = 'none';
-
-        // Disable navigation links
-        [workoutLink, progressLink, goalsLink].forEach(link => {
-            if (link) {
-                link.classList.add('disabled');
-                link.style.opacity = '0.5';
-                link.style.pointerEvents = 'none';
-                link.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    alert('Please log in to access this feature');
-                });
-            }
-        });
-    }
-}
-
-// Logout function
-async function logout() {
-    try {
-        const result = await auth.signOut();
-        if (result.success || result.error?.message?.includes('not signed in')) {
-            currentUser = null;
-            updateUI();
-            // Redirect to home page if on protected page
-            if (window.location.pathname !== '/' && window.location.pathname !== '/index.html') {
-                window.location.href = 'index.html';
-            }
-        }
-    } catch (error) {
-        console.error('Error during logout:', error);
-    }
-}
-
-// Initialize when DOM loads
-document.addEventListener('DOMContentLoaded', () => {
-    initAuth();
+    // Set up event listeners
     setupEventListeners();
-    setupAnimations();
 });
 
-// Setup event listeners
-function setupEventListeners() {
-    // Modal Elements
-    const loginModal = document.getElementById('loginModal');
-    const signupModal = document.getElementById('signupModal');
-    const loginBtn = document.querySelector('.login-btn');
-    const signupBtn = document.querySelector('.signup-btn');
-    const closeBtns = document.querySelectorAll('.close');
-    const ctaBtn = document.querySelector('.cta-btn');
-    const getStartedBtn = document.getElementById('getStartedBtn');
-    const logoutBtn = document.getElementById('logoutBtn');
+async function checkAuthStatus() {
+    try {
+        currentUser = await auth.getCurrentUser();
 
-    // Event Listeners
+        if (currentUser) {
+            console.log('User authenticated:', currentUser.email);
+            updateUIForAuthenticatedUser();
+        } else {
+            console.log('No user authenticated');
+            updateUIForUnauthenticatedUser();
+        }
+    } catch (error) {
+        console.error('Error checking auth status:', error);
+        updateUIForUnauthenticatedUser();
+    }
+}
+
+function updateUIForAuthenticatedUser() {
+    const userProfile = document.getElementById('userProfile');
+    const authSection = document.querySelector('.auth-section');
+    const userName = document.getElementById('user-name');
+
+    if (userProfile && authSection && userName) {
+        // Show user profile, hide login/signup buttons
+        userProfile.style.display = 'flex';
+
+        // Hide the login/signup buttons
+        const loginBtn = document.getElementById('loginBtn');
+        const signupBtn = document.getElementById('signupBtn');
+        if (loginBtn) loginBtn.style.display = 'none';
+        if (signupBtn) signupBtn.style.display = 'none';
+
+        // Set user name
+        userName.textContent = currentUser.email.split('@')[0];
+    }
+}
+
+function updateUIForUnauthenticatedUser() {
+    const userProfile = document.getElementById('userProfile');
+    const loginBtn = document.getElementById('loginBtn');
+    const signupBtn = document.getElementById('signupBtn');
+
+    if (userProfile) {
+        userProfile.style.display = 'none';
+    }
+
+    if (loginBtn) loginBtn.style.display = 'inline-block';
+    if (signupBtn) signupBtn.style.display = 'inline-block';
+}
+
+function setupEventListeners() {
+    // Login button
+    const loginBtn = document.getElementById('loginBtn');
     if (loginBtn) {
         loginBtn.addEventListener('click', () => {
-            if (loginModal) loginModal.style.display = 'block';
+            openModal('loginModal');
         });
     }
 
+    // Signup button
+    const signupBtn = document.getElementById('signupBtn');
     if (signupBtn) {
         signupBtn.addEventListener('click', () => {
-            if (signupModal) signupModal.style.display = 'block';
+            openModal('signupModal');
         });
     }
 
-    if (ctaBtn || getStartedBtn) {
-        const startBtn = ctaBtn || getStartedBtn;
-        startBtn.addEventListener('click', () => {
+    // Get Started button
+    const getStartedBtn = document.getElementById('getStartedBtn');
+    if (getStartedBtn) {
+        getStartedBtn.addEventListener('click', () => {
             if (currentUser) {
                 window.location.href = 'workout-logger.html';
             } else {
-                if (signupModal) signupModal.style.display = 'block';
+                openModal('signupModal');
             }
         });
     }
 
+    // Logout button
+    const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
-        logoutBtn.addEventListener('click', logout);
+        logoutBtn.addEventListener('click', handleLogout);
     }
 
-    // Modal Close Functions
-    if (closeBtns && closeBtns.length > 0) {
-        closeBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                if (loginModal) loginModal.style.display = 'none';
-                if (signupModal) signupModal.style.display = 'none';
+    // Modal close buttons
+    const modals = document.querySelectorAll('.modal');
+    modals.forEach(modal => {
+        const closeBtn = modal.querySelector('.close');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                closeModal(modal.id);
             });
-        });
-    }
-
-    window.addEventListener('click', (e) => {
-        if (e.target === loginModal || e.target === signupModal) {
-            if (loginModal) loginModal.style.display = 'none';
-            if (signupModal) signupModal.style.display = 'none';
         }
+
+        // Close modal when clicking outside
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closeModal(modal.id);
+            }
+        });
     });
 
-    // Switch between login and signup modals
+    // Switch between login and signup
     const switchToSignup = document.getElementById('switchToSignup');
     const switchToLogin = document.getElementById('switchToLogin');
 
     if (switchToSignup) {
         switchToSignup.addEventListener('click', (e) => {
             e.preventDefault();
-            if (loginModal) loginModal.style.display = 'none';
-            if (signupModal) signupModal.style.display = 'block';
+            closeModal('loginModal');
+            openModal('signupModal');
         });
     }
 
     if (switchToLogin) {
         switchToLogin.addEventListener('click', (e) => {
             e.preventDefault();
-            if (signupModal) signupModal.style.display = 'none';
-            if (loginModal) loginModal.style.display = 'block';
+            closeModal('signupModal');
+            openModal('loginModal');
         });
-    }
-
-    // Google Sign-In buttons
-    const googleSignInBtn = document.getElementById('custom-google-signin');
-    const googleSignUpBtn = document.getElementById('custom-google-signup');
-
-    if (googleSignInBtn) {
-        googleSignInBtn.addEventListener('click', handleGoogleSignIn);
-    }
-
-    if (googleSignUpBtn) {
-        googleSignUpBtn.addEventListener('click', handleGoogleSignIn);
     }
 
     // Form submissions
-    setupFormHandlers();
-}
-
-// Setup form handlers
-function setupFormHandlers() {
     const loginForm = document.getElementById('loginForm');
-    const signupForm = document.getElementById('signupForm');
-
     if (loginForm) {
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
-
-            const submitBtn = e.target.querySelector('button[type="submit"]');
-            const originalText = submitBtn.textContent;
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Logging in...';
-
-            try {
-                const result = await auth.signIn(email, password);
-
-                if (result.success) {
-                    const loginModal = document.getElementById('loginModal');
-                    if (loginModal) loginModal.style.display = 'none';
-                    showNotification('Successfully logged in!', 'success');
-                } else {
-                    showNotification('Login failed: ' + result.error, 'error');
-                }
-            } catch (error) {
-                showNotification('Login error: ' + error.message, 'error');
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.textContent = originalText;
-            }
-        });
+        loginForm.addEventListener('submit', handleLogin);
     }
 
+    const signupForm = document.getElementById('signupForm');
     if (signupForm) {
-        signupForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
+        signupForm.addEventListener('submit', handleSignup);
+    }
 
-            const name = document.getElementById('signupName').value;
-            const email = document.getElementById('signupEmail').value;
-            const password = document.getElementById('signupPassword').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
+    // Google Sign-In buttons
+    const googleSigninBtn = document.getElementById('custom-google-signin');
+    const googleSignupBtn = document.getElementById('custom-google-signup');
 
-            if (password !== confirmPassword) {
-                showNotification('Passwords do not match', 'error');
-                return;
-            }
+    if (googleSigninBtn) {
+        googleSigninBtn.addEventListener('click', handleGoogleAuth);
+    }
 
-            const submitBtn = e.target.querySelector('button[type="submit"]');
-            const originalText = submitBtn.textContent;
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Creating account...';
-
-            try {
-                const result = await auth.signUp(email, password, name);
-
-                if (result.success) {
-                    showNotification('Account created successfully! Please check your email to verify your account.', 'success');
-                    const signupModal = document.getElementById('signupModal');
-                    if (signupModal) signupModal.style.display = 'none';
-                } else {
-                    showNotification('Signup failed: ' + result.error, 'error');
-                }
-            } catch (error) {
-                showNotification('Signup error: ' + error.message, 'error');
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.textContent = originalText;
-            }
-        });
+    if (googleSignupBtn) {
+        googleSignupBtn.addEventListener('click', handleGoogleAuth);
     }
 }
 
-// Google Sign-In handler
-async function handleGoogleSignIn() {
+function openModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+
+        // Clear form inputs
+        const inputs = modal.querySelectorAll('input');
+        inputs.forEach(input => input.value = '');
+    }
+}
+
+async function handleLogin(e) {
+    e.preventDefault();
+
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
+
+    try {
+        const result = await auth.signInWithPassword(email, password);
+
+        if (result.success) {
+            currentUser = result.user;
+            console.log('Login successful:', currentUser.email);
+            updateUIForAuthenticatedUser();
+            closeModal('loginModal');
+            showNotification('Welcome back!', 'success');
+        } else {
+            showNotification(result.error || 'Login failed', 'error');
+        }
+    } catch (error) {
+        console.error('Login error:', error);
+        showNotification('Login failed. Please try again.', 'error');
+    }
+}
+
+async function handleSignup(e) {
+    e.preventDefault();
+
+    const name = document.getElementById('signupName').value;
+    const email = document.getElementById('signupEmail').value;
+    const password = document.getElementById('signupPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+
+    if (password !== confirmPassword) {
+        showNotification('Passwords do not match', 'error');
+        return;
+    }
+
+    try {
+        const result = await auth.signUp(email, password, { name });
+
+        if (result.success) {
+            console.log('Signup successful');
+            showNotification('Account created! Please check your email to verify your account.', 'success');
+            closeModal('signupModal');
+        } else {
+            showNotification(result.error || 'Signup failed', 'error');
+        }
+    } catch (error) {
+        console.error('Signup error:', error);
+        showNotification('Signup failed. Please try again.', 'error');
+    }
+}
+
+async function handleGoogleAuth() {
     try {
         const result = await auth.signInWithGoogle();
 
         if (result.success) {
-            // Close modals
-            const loginModal = document.getElementById('loginModal');
-            const signupModal = document.getElementById('signupModal');
-            if (loginModal) loginModal.style.display = 'none';
-            if (signupModal) signupModal.style.display = 'none';
-
-            showNotification('Successfully signed in with Google!', 'success');
+            currentUser = result.user;
+            console.log('Google auth successful:', currentUser.email);
+            updateUIForAuthenticatedUser();
+            closeModal('loginModal');
+            closeModal('signupModal');
+            showNotification('Welcome!', 'success');
         } else {
-            showNotification('Google sign-in failed: ' + result.error, 'error');
+            showNotification(result.error || 'Google authentication failed', 'error');
         }
     } catch (error) {
-        console.error('Google sign-in error:', error);
-        showNotification('Google sign-in error: ' + error.message, 'error');
+        console.error('Google auth error:', error);
+        showNotification('Google authentication failed. Please try again.', 'error');
     }
 }
 
-// Setup animations
-function setupAnimations() {
-    // Animate elements on scroll
-    const animateOnScroll = () => {
-        const elements = document.querySelectorAll('.feature, .template-card, .stat-card');
-        elements.forEach(element => {
-            const elementTop = element.getBoundingClientRect().top;
-            const elementVisible = 150;
+async function handleLogout() {
+    try {
+        const result = await auth.signOut();
 
-            if (elementTop < window.innerHeight - elementVisible) {
-                element.classList.add('animate-in');
-            }
-        });
-    };
-
-    window.addEventListener('scroll', animateOnScroll);
-    animateOnScroll(); // Run once on load
+        if (result.success) {
+            currentUser = null;
+            updateUIForUnauthenticatedUser();
+            showNotification('Logged out successfully', 'success');
+        } else {
+            showNotification('Logout failed', 'error');
+        }
+    } catch (error) {
+        console.error('Logout error:', error);
+        showNotification('Logout failed', 'error');
+    }
 }
 
-// Notification system
-export function showNotification(message, type = 'success') {
+function showNotification(message, type = 'info') {
+    // Remove existing notifications
+    const existingNotifications = document.querySelectorAll('.notification');
+    existingNotifications.forEach(notification => notification.remove());
+
+    // Create notification element
     const notification = document.createElement('div');
     notification.className = `notification ${type}`;
-    notification.innerHTML = `
-        <div class="notification-content">
-            <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
-            <span>${message}</span>
-        </div>
-    `;
+    notification.textContent = message;
 
+    // Add to page
     document.body.appendChild(notification);
 
-    // Trigger animation
-    setTimeout(() => notification.classList.add('show'), 100);
-
-    // Auto remove after 5 seconds
+    // Remove after 5 seconds
     setTimeout(() => {
-        notification.classList.remove('show');
-        setTimeout(() => {
-            if (notification.parentNode) {
-                notification.parentNode.removeChild(notification);
-            }
-        }, 300);
+        notification.remove();
     }, 5000);
 }
 
-// Export functions for use in other modules
-export { logout, initAuth, updateUI }; 
+// Export for use in other modules
+export { currentUser, checkAuthStatus }; 

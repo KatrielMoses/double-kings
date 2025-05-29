@@ -316,6 +316,37 @@ export const db = {
     },
 
     // Template functions
+    async saveWorkoutTemplate(templateData) {
+        try {
+            const { data, error } = await supabase
+                .from('workout_templates')
+                .insert([templateData])
+                .select()
+
+            if (error) throw error
+            return { success: true, data }
+        } catch (error) {
+            console.error('Save workout template error:', error)
+            return { success: false, error: error.message }
+        }
+    },
+
+    async getWorkoutTemplates(userId) {
+        try {
+            const { data, error } = await supabase
+                .from('workout_templates')
+                .select('*')
+                .eq('user_id', userId)
+                .order('created_at', { ascending: false })
+
+            if (error) throw error
+            return data || []
+        } catch (error) {
+            console.error('Get workout templates error:', error)
+            return []
+        }
+    },
+
     async saveTemplate(templateData) {
         try {
             const { data, error } = await supabase
