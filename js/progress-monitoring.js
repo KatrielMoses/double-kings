@@ -377,25 +377,52 @@ function initializeProgressMonitoring(userProfile) {
             pointHoverRadius: 6
         }));
 
-        // Add goal lines
+        // Add goal projection lines - from last workout to goal target
         Object.keys(goals).forEach((exercise, index) => {
-            if (goals[exercise] && goals[exercise].length > 0) {
+            if (goals[exercise] && goals[exercise].length > 0 && dataset[exercise] && dataset[exercise].length > 0) {
                 const goal = goals[exercise][0]; // Use first goal for now
-                const goalData = [
-                    { x: goal.created.toISOString().split('T')[0], y: goal.target1RM },
-                    { x: goal.deadline.toISOString().split('T')[0], y: goal.target1RM }
-                ];
 
-                datasets.push({
-                    label: `${exercise} Goal`,
-                    data: goalData,
-                    borderColor: colors[index % colors.length],
-                    backgroundColor: 'transparent',
-                    borderDash: [5, 5],
-                    fill: false,
-                    pointRadius: 0,
-                    pointHoverRadius: 0
-                });
+                // Get the last workout data point for this exercise
+                const lastWorkoutPoint = dataset[exercise][dataset[exercise].length - 1];
+
+                if (lastWorkoutPoint) {
+                    // Create projection line from last workout to goal
+                    const goalProjectionData = [
+                        {
+                            x: lastWorkoutPoint.x,
+                            y: lastWorkoutPoint.y,
+                            isGoal: false,
+                            exerciseName: exercise
+                        },
+                        {
+                            x: goal.deadline.toISOString().split('T')[0],
+                            y: goal.target1RM,
+                            isGoal: true,
+                            reps: goal.targetReps,
+                            weight: goal.targetWeight,
+                            exerciseName: exercise,
+                            weeks: goal.weeks
+                        }
+                    ];
+
+                    datasets.push({
+                        label: `${exercise} Goal`,
+                        data: goalProjectionData,
+                        borderColor: '#f1c40f', // Yellow color for goal lines
+                        backgroundColor: 'transparent',
+                        borderDash: [6, 6], // Dotted line
+                        borderWidth: 2,
+                        fill: false,
+                        pointRadius: [0, 6], // Only show point at goal target
+                        pointBackgroundColor: '#f1c40f', // Yellow color for goal point
+                        pointBorderColor: '#ffffff',
+                        pointBorderWidth: 2,
+                        pointHoverRadius: 8,
+                        tension: 0,
+                        showLine: true,
+                        order: 2 // Draw goal lines on top
+                    });
+                }
             }
         });
 
