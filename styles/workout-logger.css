@@ -1306,322 +1306,309 @@
     font-style: italic;
 }
 
-/* Template Builder Styles */
-.template-builder {
-    margin-bottom: 2rem;
+/* Custom Split Creation Styles */
+.custom-split-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
 }
 
-.template-days-section {
-    margin-top: 2rem;
+.custom-split-header {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 1.5rem;
+    align-items: end;
+    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
 }
 
-.section-header {
+.custom-days-section {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    padding: 1.5rem;
+}
+
+.custom-days-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 1.5rem;
 }
 
-.section-header h4 {
+.custom-days-header h4 {
     color: var(--text-color);
     font-size: 1.2rem;
     font-weight: 600;
     margin: 0;
 }
 
-.day-controls {
-    display: flex;
-    gap: 0.5rem;
-}
-
-.template-days-list {
+.custom-days-grid {
     display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 1.5rem;
 }
 
-.template-day-card {
-    background: rgba(255, 255, 255, 0.05);
+.custom-day-card {
+    background: rgba(255, 255, 255, 0.08);
     border: 1px solid var(--border-color);
     border-radius: 12px;
     padding: 1.5rem;
-    transition: all 0.3s ease;
-}
-
-.template-day-card:hover {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: var(--secondary-color);
-}
-
-.template-day-header {
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
     align-items: center;
-    margin-bottom: 1rem;
-}
-
-.day-name-input {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    color: var(--text-color);
-    padding: 0.75rem 1rem;
-    font-size: 1rem;
-    font-weight: 600;
-    font-family: inherit;
-    transition: all 0.3s ease;
-    width: 200px;
-}
-
-.day-name-input:focus {
-    outline: none;
-    border-color: var(--secondary-color);
-    background: rgba(255, 255, 255, 0.15);
-}
-
-.template-day-actions {
-    display: flex;
-    gap: 0.5rem;
-}
-
-.day-action-btn {
-    background: rgba(255, 255, 255, 0.1);
-    border: none;
-    border-radius: 6px;
-    color: var(--text-color);
-    padding: 0.5rem;
+    gap: 1rem;
     cursor: pointer;
-    transition: all 0.2s ease;
-    width: 32px;
-    height: 32px;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.custom-day-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    background: rgba(255, 255, 255, 0.12);
+    border-color: var(--secondary-color);
+}
+
+.custom-day-card.active {
+    background: rgba(52, 152, 219, 0.15);
+    border-color: var(--secondary-color);
+}
+
+.custom-day-icon {
+    width: 60px;
+    height: 60px;
+    background: var(--secondary-color);
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-}
-
-.day-action-btn:hover {
-    background: rgba(255, 255, 255, 0.2);
-}
-
-.day-action-btn.delete-day {
-    color: #e74c3c;
-}
-
-.day-action-btn.delete-day:hover {
-    background: rgba(231, 76, 60, 0.2);
-}
-
-.template-day-exercises {
-    margin-top: 1rem;
-}
-
-.template-day-exercises h5 {
-    color: var(--text-color);
-    font-size: 0.95rem;
-    font-weight: 500;
-    margin: 0 0 0.75rem 0;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.exercise-count {
-    background: var(--secondary-color);
+    font-size: 1.5rem;
     color: white;
-    font-size: 0.8rem;
-    padding: 2px 8px;
-    border-radius: 12px;
+    transition: all 0.3s ease;
+}
+
+.custom-day-name {
+    font-size: 1.1rem;
     font-weight: 600;
+    color: var(--text-color);
+    text-align: center;
 }
 
-.template-exercises-list {
-    display: grid;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
+.custom-day-exercises-count {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
 }
 
-.template-exercise-item {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    padding: 0.75rem;
+.custom-day-card:hover .custom-day-icon {
+    transform: scale(1.1);
+}
+
+/* Delete button for custom day cards */
+.custom-day-delete {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    width: 24px;
+    height: 24px;
+    background: rgba(231, 76, 60, 0.8);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    opacity: 0;
     transition: all 0.2s ease;
 }
 
-.template-exercise-item:hover {
-    background: rgba(255, 255, 255, 0.1);
+.custom-day-card:hover .custom-day-delete {
+    opacity: 1;
 }
 
-.template-exercise-info {
+.custom-day-delete:hover {
+    background: #e74c3c;
+    transform: scale(1.1);
+}
+
+/* Edit Custom Day Styles */
+.edit-day-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.day-name-section {
+    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+}
+
+.day-exercises-section {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    padding: 1.5rem;
+}
+
+.day-exercises-section h4 {
+    color: var(--text-color);
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.edit-day-actions {
+    text-align: center;
+    padding: 1.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+}
+
+/* Custom day exercise item styles */
+.custom-day-exercise-item {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.custom-day-exercise-item:hover {
+    background: rgba(255, 255, 255, 0.12);
+    transform: translateY(-2px);
+}
+
+.custom-day-exercise-info {
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
 }
 
-.template-exercise-name {
+.custom-day-exercise-name {
     color: var(--text-color);
+    font-size: 1.1rem;
     font-weight: 500;
-    font-size: 0.95rem;
 }
 
-.template-exercise-details {
+.custom-day-exercise-details {
     color: var(--text-secondary);
-    font-size: 0.8rem;
-}
-
-.template-exercise-actions {
-    display: flex;
-    gap: 0.25rem;
-}
-
-.exercise-action-btn-small {
-    background: rgba(255, 255, 255, 0.1);
-    border: none;
-    border-radius: 4px;
-    color: var(--text-secondary);
-    padding: 0.25rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    width: 24px;
-    height: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.8rem;
-}
-
-.exercise-action-btn-small:hover {
-    background: rgba(255, 255, 255, 0.2);
-    color: var(--text-color);
-}
-
-.exercise-action-btn-small.delete {
-    color: #e74c3c;
-}
-
-.exercise-action-btn-small.delete:hover {
-    background: rgba(231, 76, 60, 0.2);
-}
-
-.add-exercise-to-day {
-    background: rgba(39, 174, 96, 0.1);
-    border: 1px dashed var(--accent-color);
-    border-radius: 8px;
-    color: var(--accent-color);
-    padding: 0.75rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    text-align: center;
     font-size: 0.9rem;
-    font-weight: 500;
 }
 
-.add-exercise-to-day:hover {
-    background: rgba(39, 174, 96, 0.15);
-    border-color: #219a52;
-}
-
-.template-builder-actions {
-    display: flex;
-    justify-content: center;
-    gap: 1rem;
-    margin-top: 2rem;
-    padding-top: 2rem;
-    border-top: 1px solid var(--border-color);
-}
-
-/* Template card enhancements */
-.template-actions {
+.custom-day-exercise-actions {
     display: flex;
     gap: 0.5rem;
-    margin-top: 0.5rem;
-    opacity: 0;
-    transition: opacity 0.2s ease;
 }
 
-.day-card.template-card:hover .template-actions {
-    opacity: 1;
-}
-
-.template-action-btn {
-    background: rgba(0, 0, 0, 0.2);
-    border: none;
-    border-radius: 4px;
-    color: var(--text-secondary);
-    padding: 0.25rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    width: 24px;
-    height: 24px;
+.custom-day-exercise-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.8rem;
+    background: rgba(0, 0, 0, 0.2);
+    color: var(--text-secondary);
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
 }
 
-.template-action-btn:hover {
+.custom-day-exercise-btn:hover {
     background: rgba(0, 0, 0, 0.4);
     color: var(--text-color);
 }
 
-.template-action-btn.delete-template {
+.custom-day-exercise-btn.delete-btn {
     color: #e74c3c;
 }
 
-.template-action-btn.delete-template:hover {
-    background: rgba(231, 76, 60, 0.3);
+.custom-day-exercise-btn.delete-btn:hover {
+    background: rgba(231, 76, 60, 0.2);
 }
 
-.day-exercises {
-    font-size: 0.8rem;
+/* Responsive adjustments for custom split */
+@media (max-width: 768px) {
+    .custom-split-header {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .custom-days-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 1rem;
+    }
+
+    .custom-day-icon {
+        width: 50px;
+        height: 50px;
+        font-size: 1.2rem;
+    }
+
+    .custom-day-name {
+        font-size: 0.95rem;
+    }
+
+    .custom-days-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+    }
+}
+
+/* No custom splits message */
+.no-custom-splits {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 3rem 2rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+}
+
+.no-custom-splits p {
     color: var(--text-secondary);
+    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Day details for custom splits */
+.day-details {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    text-align: center;
     margin-top: 0.25rem;
 }
 
-/* Create new template card styling */
-.create-new-template {
-    border: 2px dashed var(--accent-color);
-    background: rgba(39, 174, 96, 0.1);
-    transition: all 0.3s ease;
-}
-
-.create-new-template:hover {
-    background: rgba(39, 174, 96, 0.15);
-    border-color: #219a52;
-    transform: translateY(-3px);
-}
-
-.back-card {
-    border: 2px solid var(--secondary-color);
-    background: rgba(52, 152, 219, 0.1);
-}
-
-.back-card:hover {
-    background: rgba(52, 152, 219, 0.15);
-    transform: translateY(-3px);
-}
-
-/* Responsive template builder */
+/* Responsive adjustments */
 @media (max-width: 768px) {
-    .template-day-header {
-        flex-direction: column;
+
+    .split-grid,
+    .day-grid {
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
         gap: 1rem;
-        align-items: stretch;
     }
 
-    .day-name-input {
-        width: 100%;
+    .split-icon,
+    .day-icon {
+        width: 50px;
+        height: 50px;
+        font-size: 1.2rem;
     }
 
-    .template-builder-actions {
-        flex-direction: column;
-    }
-
-    .section-header {
-        flex-direction: column;
-        gap: 1rem;
-        align-items: stretch;
+    .split-name,
+    .day-name {
+        font-size: 0.95rem;
     }
 }

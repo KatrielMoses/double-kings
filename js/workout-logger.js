@@ -1,5 +1,5 @@
 import { auth, db, supabase } from './supabase-config.js';
-import { workoutTemplates, loadWorkoutTemplate, saveCustomTemplate, saveCustomTemplateSplit, getCustomTemplates, loadCustomTemplate, deleteCustomTemplate, createDefaultTemplate, validateTemplate } from './workout-templates.js';
+import { workoutTemplates, loadWorkoutTemplate, saveCustomTemplate, getCustomTemplates, loadCustomTemplate } from './workout-templates.js';
 
 // Global variables
 let currentUser = null;
@@ -933,12 +933,23 @@ function initWorkoutLogger() {
             // Add active class to selected card
             card.classList.add('active');
 
-            // Generate day cards based on selected split
-            generateDayCards(splitType);
-
-            // Show day selection step and hide split selection
-            splitSelectionStep.style.display = 'none';
-            daySelectionStep.style.display = 'block';
+            // Handle different split types
+            if (splitType === 'createCustom') {
+                // Show custom split creation step
+                splitSelectionStep.style.display = 'none';
+                document.getElementById('customSplitStep').style.display = 'block';
+                initializeCustomSplit();
+            } else if (splitType === 'custom') {
+                // Generate day cards based on saved custom templates
+                generateDayCards(splitType);
+                splitSelectionStep.style.display = 'none';
+                daySelectionStep.style.display = 'block';
+            } else {
+                // Generate day cards based on selected split
+                generateDayCards(splitType);
+                splitSelectionStep.style.display = 'none';
+                daySelectionStep.style.display = 'block';
+            }
 
             console.log('Split selected:', splitType);
         });
@@ -954,40 +965,203 @@ function initWorkoutLogger() {
         workoutDaySelect.value = '';
     });
 
+    // Back button from custom split creation
+    const backToSplitsFromCustomBtn = document.getElementById('backToSplitsFromCustom');
+    if (backToSplitsFromCustomBtn) {
+        backToSplitsFromCustomBtn.addEventListener('click', () => {
+            document.getElementById('customSplitStep').style.display = 'none';
+            splitSelectionStep.style.display = 'block';
+        });
+    }
+
+    // Back button from edit custom day
+    const backToCustomSplitBtn = document.getElementById('backToCustomSplit');
+    if (backToCustomSplitBtn) {
+        backToCustomSplitBtn.addEventListener('click', () => {
+            document.getElementById('editCustomDayStep').style.display = 'none';
+            document.getElementById('customSplitStep').style.display = 'block';
+
+            // Update the day name in the split
+            const dayName = document.getElementById('customDayName').value.trim();
+            if (dayName && currentEditingDayIndex !== null) {
+                currentCustomSplit.days[currentEditingDayIndex].name = dayName;
+                renderCustomDays();
+            }
+        });
+    }
+
+    // Add custom day button
+    const addCustomDayBtn = document.getElementById('addCustomDay');
+    if (addCustomDayBtn) {
+        addCustomDayBtn.addEventListener('click', () => {
+            const newDayNumber = currentCustomSplit.days.length + 1;
+            const newDay = {
+                name: `Day ${newDayNumber}`,
+                exercises: []
+            };
+
+            currentCustomSplit.days.push(newDay);
+            renderCustomDays();
+        });
+    }
+
+    // Add exercise to day button
+    const addExerciseToDayBtn = document.getElementById('addExerciseToDay');
+    if (addExerciseToDayBtn) {
+        addExerciseToDayBtn.addEventListener('click', () => {
+            addExerciseToCustomDay();
+        });
+    }
+
+    // Finish editing day button
+    const finishEditingDayBtn = document.getElementById('finishEditingDay');
+    if (finishEditingDayBtn) {
+        finishEditingDayBtn.addEventListener('click', () => {
+            // Update the day name
+            const dayName = document.getElementById('customDayName').value.trim();
+            if (dayName && currentEditingDayIndex !== null) {
+                currentCustomSplit.days[currentEditingDayIndex].name = dayName;
+            }
+
+            // Go back to custom split overview
+            document.getElementById('editCustomDayStep').style.display = 'none';
+            document.getElementById('customSplitStep').style.display = 'block';
+            renderCustomDays();
+        });
+    }
+
+    // Save custom split button
+    const saveCustomSplitBtn = document.getElementById('saveCustomSplit');
+    if (saveCustomSplitBtn) {
+        saveCustomSplitBtn.addEventListener('click', () => {
+            const splitName = document.getElementById('customSplitName').value.trim();
+
+            if (!splitName) {
+                alert('Please enter a name for your split');
+                return;
+            }
+
+            // Validate that at least one day has exercises
+            const hasExercises = currentCustomSplit.days.some(day => day.exercises.length > 0);
+            if (!hasExercises) {
+                alert('Please add at least one exercise to one of your days');
+                return;
+            }
+
+            // Save the custom split
+            saveCustomSplitToStorage(splitName, currentCustomSplit);
+
+            // Show success message and go back to splits
+            alert(`Custom split "${splitName}" saved successfully!`);
+            document.getElementById('customSplitStep').style.display = 'none';
+            splitSelectionStep.style.display = 'block';
+        });
+    }
+
+    // Save custom split to localStorage
+    function saveCustomSplitToStorage(name, split) {
+        try {
+            const existingCustomSplits = JSON.parse(localStorage.getItem('customWorkoutSplits') || '{}');
+
+            // Convert the split format to match the expected template structure
+            const splitData = {
+                name: name,
+                type: 'custom',
+                splits: {}
+            };
+
+            split.days.forEach((day, index) => {
+                const dayKey = `day${index + 1}`;
+                splitData.splits[dayKey] = {
+                    name: day.name,
+                    exercises: day.exercises
+                };
+            });
+
+            existingCustomSplits[name] = splitData;
+            localStorage.setItem('customWorkoutSplits', JSON.stringify(existingCustomSplits));
+
+            console.log('Custom split saved:', name, splitData);
+        } catch (error) {
+            console.error('Error saving custom split:', error);
+            alert('Error saving custom split. Please try again.');
+        }
+    }
+
+    // Update generateDayCards to handle custom splits
+    const originalGenerateDayCards = generateDayCards;
+    generateDayCards = function (splitType) {
+        workoutDayGrid.innerHTML = '';
+
+        if (splitType === 'custom') {
+            // Load saved custom splits
+            const customSplits = JSON.parse(localStorage.getItem('customWorkoutSplits') || '{}');
+
+            if (Object.keys(customSplits).length === 0) {
+                workoutDayGrid.innerHTML = `
+                    <div class="no-custom-splits">
+                        <p>No custom splits saved yet.</p>
+                        <button onclick="document.querySelector('[data-split=createCustom]').click()" class="secondary-btn">
+                            <i class="fas fa-plus"></i> Create Your First Split
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            Object.entries(customSplits).forEach(([splitName, splitData]) => {
+                createCustomSplitCard(splitName, splitData);
+            });
+        } else {
+            // Use original function for built-in templates
+            originalGenerateDayCards.call(this, splitType);
+        }
+    };
+
+    // Create custom split selection card
+    function createCustomSplitCard(splitName, splitData) {
+        const splitCard = document.createElement('div');
+        splitCard.className = 'day-card';
+        splitCard.dataset.split = splitName;
+
+        const dayCount = Object.keys(splitData.splits).length;
+
+        splitCard.innerHTML = `
+            <div class="day-icon">
+                <i class="fas fa-star"></i>
+            </div>
+            <div class="day-name">${splitName}</div>
+            <div class="day-details">${dayCount} days</div>
+        `;
+
+        // Add click event to select this custom split
+        splitCard.addEventListener('click', () => {
+            // Remove active class from all cards
+            document.querySelectorAll('.day-card').forEach(card => {
+                card.classList.remove('active');
+            });
+
+            // Add active class to selected card
+            splitCard.classList.add('active');
+
+            // Set the selected split and day
+            selectedSplitType = 'custom';
+            workoutDaySelect.value = splitName;
+
+            console.log('Custom split selected:', splitName);
+        });
+
+        workoutDayGrid.appendChild(splitCard);
+    }
+
     // Generate day cards based on selected split
     function generateDayCards(splitType) {
         workoutDayGrid.innerHTML = '';
 
         if (splitType === 'custom') {
-            // Add "Create New Template" card first
-            const createNewCard = document.createElement('div');
-            createNewCard.className = 'day-card create-new-template';
-            createNewCard.innerHTML = `
-                <div class="day-icon" style="background: var(--accent-color);">
-                    <i class="fas fa-plus"></i>
-                </div>
-                <div class="day-name">Create New Template</div>
-            `;
-
-            createNewCard.addEventListener('click', () => {
-                openTemplateBuilder();
-            });
-
-            workoutDayGrid.appendChild(createNewCard);
-
-            // Add existing custom templates
             const customTemplates = getCustomTemplates();
             Object.keys(customTemplates).forEach(templateName => {
-                const template = customTemplates[templateName];
-
-                // Check if it's a multi-day template
-                if (template.isMultiDay && template.splits) {
-                    // For multi-day templates, create a template card that opens day selection
-                    createTemplateCard(templateName, template);
-                } else {
-                    // For single-day templates (legacy), create a direct day card
-                    createDayCard(templateName, templateName, 'fa-star');
-                }
+                createDayCard(templateName, templateName, 'fa-star');
             });
         } else if (splitType && workoutTemplates[splitType]) {
             Object.entries(workoutTemplates[splitType].splits).forEach(([dayKey, day]) => {
@@ -1003,108 +1177,6 @@ function initWorkoutLogger() {
                 createDayCard(dayKey, day.name, iconClass);
             });
         }
-    }
-
-    // Create a template card for multi-day templates
-    function createTemplateCard(templateName, template) {
-        const templateCard = document.createElement('div');
-        templateCard.className = 'day-card template-card';
-        templateCard.dataset.templateName = templateName;
-
-        templateCard.innerHTML = `
-            <div class="day-icon">
-                <i class="fas fa-star"></i>
-            </div>
-            <div class="day-name">${template.name}</div>
-            <div class="template-actions">
-                <button class="template-action-btn edit-template" title="Edit Template">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button class="template-action-btn delete-template" title="Delete Template">
-                    <i class="fas fa-trash"></i>
-                </button>
-            </div>
-        `;
-
-        // Click to view days in this template
-        templateCard.addEventListener('click', (e) => {
-            if (e.target.closest('.template-actions')) return;
-
-            // Show days for this template
-            showTemplateDays(templateName, template);
-        });
-
-        // Edit template button
-        const editBtn = templateCard.querySelector('.edit-template');
-        editBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            openTemplateBuilder(templateName, template);
-        });
-
-        // Delete template button
-        const deleteBtn = templateCard.querySelector('.delete-template');
-        deleteBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            if (confirm(`Are you sure you want to delete the template "${template.name}"?`)) {
-                deleteCustomTemplate(templateName);
-                generateDayCards('custom'); // Refresh the display
-            }
-        });
-
-        workoutDayGrid.appendChild(templateCard);
-    }
-
-    // Show days for a selected template
-    function showTemplateDays(templateName, template) {
-        workoutDayGrid.innerHTML = '';
-
-        // Add back button
-        const backCard = document.createElement('div');
-        backCard.className = 'day-card back-card';
-        backCard.innerHTML = `
-            <div class="day-icon" style="background: var(--secondary-color);">
-                <i class="fas fa-arrow-left"></i>
-            </div>
-            <div class="day-name">Back to Templates</div>
-        `;
-
-        backCard.addEventListener('click', () => {
-            generateDayCards('custom');
-        });
-
-        workoutDayGrid.appendChild(backCard);
-
-        // Add days from the template
-        Object.entries(template.splits).forEach(([dayKey, day]) => {
-            const dayCard = document.createElement('div');
-            dayCard.className = 'day-card';
-            dayCard.dataset.day = dayKey;
-            dayCard.dataset.templateName = templateName;
-
-            dayCard.innerHTML = `
-                <div class="day-icon">
-                    <i class="fas fa-calendar-day"></i>
-                </div>
-                <div class="day-name">${day.name}</div>
-                <div class="day-exercises">${day.exercises.length} exercises</div>
-            `;
-
-            dayCard.addEventListener('click', () => {
-                // Remove active class from all day cards
-                document.querySelectorAll('.day-card').forEach(card => {
-                    card.classList.remove('active');
-                });
-
-                // Add active class to selected card
-                dayCard.classList.add('active');
-
-                // Set the selected values for loading
-                workoutDaySelect.value = dayKey;
-                window.selectedCustomTemplate = templateName;
-            });
-
-            workoutDayGrid.appendChild(dayCard);
-        });
     }
 
     // Create a day card element
@@ -1152,7 +1224,7 @@ function initWorkoutLogger() {
 
         // If there's an active day card, use its data-day attribute
         if (activeDay) {
-            selectedDay = activeDay.dataset.day;
+            selectedDay = activeDay.dataset.day || activeDay.dataset.split;
             // Update the hidden select for consistency
             workoutDaySelect.value = selectedDay;
         }
@@ -1166,18 +1238,34 @@ function initWorkoutLogger() {
 
         let template;
         if (selectedSplit === 'custom') {
-            // Check if we have a selected custom template (multi-day)
-            if (window.selectedCustomTemplate) {
-                const customTemplate = loadCustomTemplate(window.selectedCustomTemplate);
-                if (customTemplate && customTemplate.splits && customTemplate.splits[selectedDay]) {
-                    template = customTemplate.splits[selectedDay];
-                } else {
-                    alert('Failed to load custom template day');
+            // Check if we're selecting a custom split or a day within a custom split
+            const activeCard = document.querySelector('.day-card.active');
+
+            if (activeCard && activeCard.dataset.customSplit) {
+                // We're selecting a day within a custom split
+                const dayKey = activeCard.dataset.day;
+                const customSplitName = activeCard.dataset.customSplit;
+
+                const customSplits = JSON.parse(localStorage.getItem('customWorkoutSplits') || '{}');
+                template = customSplits[customSplitName].splits[dayKey];
+
+                if (!template) {
+                    alert('Failed to load custom day template');
                     return;
                 }
             } else {
-                // Legacy single-day custom template
-                template = loadCustomTemplate(selectedDay);
+                // We're selecting a custom split itself - need to show its days
+                const customSplits = JSON.parse(localStorage.getItem('customWorkoutSplits') || '{}');
+                const customSplit = customSplits[selectedDay];
+
+                if (!customSplit) {
+                    alert('Custom split not found');
+                    return;
+                }
+
+                // Show the days within this custom split
+                generateCustomSplitDayCards(selectedDay, customSplit);
+                return; // Don't proceed to load template yet
             }
         } else {
             template = loadWorkoutTemplate(selectedSplit, selectedDay);
@@ -1195,6 +1283,49 @@ function initWorkoutLogger() {
         // Generate exercise list from template
         createExerciseList(template);
     });
+
+    // Generate day cards for a specific custom split
+    function generateCustomSplitDayCards(splitName, splitData) {
+        workoutDayGrid.innerHTML = '';
+
+        // Update the title
+        const stepTitle = document.querySelector('#daySelectionStep .step-title');
+        stepTitle.textContent = `Select Day - ${splitName}`;
+
+        Object.entries(splitData.splits).forEach(([dayKey, day]) => {
+            const dayCard = document.createElement('div');
+            dayCard.className = 'day-card';
+            dayCard.dataset.day = dayKey;
+            dayCard.dataset.customSplit = splitName;
+
+            dayCard.innerHTML = `
+                <div class="day-icon">
+                    <i class="fas fa-calendar-day"></i>
+                </div>
+                <div class="day-name">${day.name}</div>
+                <div class="day-details">${day.exercises.length} exercises</div>
+            `;
+
+            // Add click event to select this day
+            dayCard.addEventListener('click', () => {
+                // Remove active class from all day cards
+                document.querySelectorAll('.day-card').forEach(card => {
+                    card.classList.remove('active');
+                });
+
+                // Add active class to selected card
+                dayCard.classList.add('active');
+
+                // Update hidden select for compatibility
+                workoutDaySelect.value = `${splitName}_${dayKey}`;
+            });
+
+            workoutDayGrid.appendChild(dayCard);
+        });
+
+        // Show the day selection step
+        document.getElementById('daySelectionStep').style.display = 'block';
+    }
 
     // Create and display the exercise list from template
     function createExerciseList(template) {
@@ -1960,378 +2091,332 @@ function initWorkoutLogger() {
         }
     });
 
-    // Template Builder Functions
-    let currentEditingTemplate = null;
-    let templateDayCounter = 0;
+    // Custom Split Management
+    let currentCustomSplit = null;
+    let currentEditingDayIndex = null;
 
-    // Open template builder (for new or editing existing template)
-    window.openTemplateBuilder = function (templateName = null, existingTemplate = null) {
-        console.log('Opening template builder', templateName, existingTemplate);
+    // Initialize custom split creation
+    function initializeCustomSplit() {
+        currentCustomSplit = {
+            name: '',
+            days: [
+                { name: 'Day 1', exercises: [] },
+                { name: 'Day 2', exercises: [] },
+                { name: 'Day 3', exercises: [] }
+            ]
+        };
 
-        // Hide templates section and show builder
-        document.querySelector('.workout-templates').style.display = 'none';
-        document.getElementById('templateBuilder').style.display = 'block';
+        // Clear the split name input
+        document.getElementById('customSplitName').value = '';
 
-        // Set up the template builder
-        const templateNameInput = document.getElementById('templateName');
-        const templateDaysList = document.getElementById('templateDaysList');
-
-        if (existingTemplate) {
-            // Editing existing template
-            currentEditingTemplate = templateName;
-            templateNameInput.value = existingTemplate.name;
-
-            // Clear and populate days
-            templateDaysList.innerHTML = '';
-            templateDayCounter = 0;
-
-            Object.entries(existingTemplate.splits).forEach(([dayId, dayData]) => {
-                createTemplateDayCard(dayId, dayData.name, dayData.exercises);
-            });
-        } else {
-            // Creating new template
-            currentEditingTemplate = null;
-            templateNameInput.value = '';
-
-            // Create default 6 days
-            templateDaysList.innerHTML = '';
-            templateDayCounter = 0;
-
-            for (let i = 1; i <= 6; i++) {
-                createTemplateDayCard(`day${i}`, `Day ${i}`, []);
-            }
-        }
-    };
-
-    // Create a template day card in the builder
-    function createTemplateDayCard(dayId, dayName, exercises) {
-        templateDayCounter++;
-        const templateDaysList = document.getElementById('templateDaysList');
-
-        const dayCard = document.createElement('div');
-        dayCard.className = 'template-day-card';
-        dayCard.dataset.dayId = dayId;
-
-        dayCard.innerHTML = `
-            <div class="template-day-header">
-                <input type="text" class="day-name-input" value="${dayName}" placeholder="Day name (e.g., Push Day)">
-                <div class="template-day-actions">
-                    <button class="day-action-btn delete-day" title="Delete Day">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            </div>
-            <div class="template-day-exercises">
-                <h5>Exercises <span class="exercise-count">${exercises.length}</span></h5>
-                <div class="template-exercises-list">
-                    <!-- Exercises will be added here -->
-                </div>
-                <div class="add-exercise-to-day">
-                    <i class="fas fa-plus"></i> Add Exercise to This Day
-                </div>
-            </div>
-        `;
-
-        // Add existing exercises
-        const exercisesList = dayCard.querySelector('.template-exercises-list');
-        exercises.forEach(exercise => {
-            addExerciseToTemplateDay(exercisesList, exercise);
-        });
-
-        // Add event listeners
-        const deleteBtn = dayCard.querySelector('.delete-day');
-        deleteBtn.addEventListener('click', () => {
-            if (confirm('Delete this day and all its exercises?')) {
-                dayCard.remove();
-                updateTemplateDayCounter();
-            }
-        });
-
-        const addExerciseBtn = dayCard.querySelector('.add-exercise-to-day');
-        addExerciseBtn.addEventListener('click', () => {
-            openExerciseSelector(exercisesList);
-        });
-
-        templateDaysList.appendChild(dayCard);
-        updateTemplateDayCounter();
+        // Render the initial days
+        renderCustomDays();
     }
 
-    // Add exercise to template day
-    function addExerciseToTemplateDay(exercisesList, exercise) {
-        const exerciseItem = document.createElement('div');
-        exerciseItem.className = 'template-exercise-item';
+    // Render custom days grid
+    function renderCustomDays() {
+        const daysGrid = document.getElementById('customDaysGrid');
+        daysGrid.innerHTML = '';
 
-        exerciseItem.innerHTML = `
-            <div class="template-exercise-info">
-                <div class="template-exercise-name">${exercise.exercise}</div>
-                <div class="template-exercise-details">${exercise.muscleGroup} • ${exercise.defaultSets} sets × ${exercise.defaultReps} reps</div>
+        currentCustomSplit.days.forEach((day, index) => {
+            const dayCard = createCustomDayCard(day, index);
+            daysGrid.appendChild(dayCard);
+        });
+    }
+
+    // Create a custom day card
+    function createCustomDayCard(day, index) {
+        const dayCard = document.createElement('div');
+        dayCard.className = 'custom-day-card';
+        dayCard.dataset.dayIndex = index;
+
+        dayCard.innerHTML = `
+            <button class="custom-day-delete" title="Delete day">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="custom-day-icon">
+                <i class="fas fa-calendar-day"></i>
             </div>
-            <div class="template-exercise-actions">
-                <button class="exercise-action-btn-small delete" title="Remove Exercise">
+            <div class="custom-day-name">${day.name}</div>
+            <div class="custom-day-exercises-count">${day.exercises.length} exercises</div>
+        `;
+
+        // Add click event to edit the day
+        dayCard.addEventListener('click', (e) => {
+            if (!e.target.closest('.custom-day-delete')) {
+                editCustomDay(index);
+            }
+        });
+
+        // Add delete functionality
+        const deleteBtn = dayCard.querySelector('.custom-day-delete');
+        deleteBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            deleteCustomDay(index);
+        });
+
+        return dayCard;
+    }
+
+    // Edit a custom day
+    function editCustomDay(dayIndex) {
+        currentEditingDayIndex = dayIndex;
+        const day = currentCustomSplit.days[dayIndex];
+
+        // Hide custom split step and show edit day step
+        document.getElementById('customSplitStep').style.display = 'none';
+        document.getElementById('editCustomDayStep').style.display = 'block';
+
+        // Update the title and populate form
+        document.getElementById('editDayTitle').textContent = `Edit ${day.name}`;
+        document.getElementById('customDayName').value = day.name;
+
+        // Render exercises for this day
+        renderCustomDayExercises(day.exercises);
+    }
+
+    // Render exercises for custom day
+    function renderCustomDayExercises(exercises) {
+        const exerciseList = document.getElementById('customDayExerciseList');
+        exerciseList.innerHTML = '';
+
+        if (exercises.length === 0) {
+            // Add initial empty exercise
+            addExerciseToCustomDay();
+        } else {
+            exercises.forEach((exercise, index) => {
+                const exerciseItem = createCustomDayExerciseItem(exercise, index);
+                exerciseList.appendChild(exerciseItem);
+            });
+        }
+    }
+
+    // Create exercise item for custom day
+    function createCustomDayExerciseItem(exercise, index) {
+        const listItem = document.createElement('li');
+        listItem.className = 'custom-day-exercise-item';
+        listItem.dataset.index = index;
+
+        listItem.innerHTML = `
+            <div class="custom-day-exercise-info">
+                <div class="custom-day-exercise-name">${exercise.exercise}</div>
+                <div class="custom-day-exercise-details">${exercise.muscleGroup} • ${exercise.defaultSets} sets • ${exercise.defaultReps} reps</div>
+            </div>
+            <div class="custom-day-exercise-actions">
+                <button class="custom-day-exercise-btn delete-btn" title="Delete exercise">
                     <i class="fas fa-trash"></i>
                 </button>
             </div>
         `;
 
         // Add delete functionality
-        const deleteBtn = exerciseItem.querySelector('.delete');
+        const deleteBtn = listItem.querySelector('.delete-btn');
         deleteBtn.addEventListener('click', () => {
-            exerciseItem.remove();
-            updateExerciseCount(exercisesList);
+            deleteExerciseFromCustomDay(index);
         });
 
-        exercisesList.appendChild(exerciseItem);
-        updateExerciseCount(exercisesList);
+        return listItem;
     }
 
-    // Open exercise selector modal
-    function openExerciseSelector(targetExercisesList) {
-        const modal = document.createElement('div');
-        modal.className = 'modal active';
-        modal.innerHTML = `
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2>Add Exercise</h2>
-                    <button class="close-modal">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label for="exerciseMuscleGroup">Muscle Group</label>
-                        <select id="exerciseMuscleGroup">
-                            <option value="">Select Muscle Group</option>
-                            <option value="chest">Chest</option>
-                            <option value="back">Back</option>
-                            <option value="legs">Legs</option>
-                            <option value="shoulders">Shoulders</option>
-                            <option value="arms">Arms</option>
-                            <option value="core">Core</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="exerciseName">Exercise</label>
-                        <select id="exerciseName" disabled>
-                            <option value="">Select Exercise</option>
-                        </select>
-                        <input type="text" id="customExerciseName" placeholder="Or enter custom exercise name..." style="margin-top: 0.5rem;">
-                    </div>
-                    <div class="form-group">
-                        <label for="exerciseSets">Default Sets</label>
-                        <input type="number" id="exerciseSets" min="1" max="10" value="3">
-                    </div>
-                    <div class="form-group">
-                        <label for="exerciseReps">Default Reps</label>
-                        <input type="text" id="exerciseReps" placeholder="e.g., 8-12 or 30 sec" value="8-12">
-                    </div>
-                    <div class="form-actions">
-                        <button type="button" id="addExerciseToTemplate" class="submit-btn">Add Exercise</button>
-                        <button type="button" id="cancelExerciseAdd" class="secondary-btn">Cancel</button>
-                    </div>
-                </div>
+    // Add exercise to custom day
+    function addExerciseToCustomDay() {
+        const exerciseList = document.getElementById('customDayExerciseList');
+        const newIndex = currentCustomSplit.days[currentEditingDayIndex].exercises.length;
+
+        // Create a new empty exercise
+        const newExercise = {
+            id: generateExerciseId(),
+            muscleGroup: '',
+            exercise: '',
+            defaultSets: 3,
+            defaultReps: '8-12',
+            isNew: true,
+            isLogged: false
+        };
+
+        // Add to current day
+        currentCustomSplit.days[currentEditingDayIndex].exercises.push(newExercise);
+
+        // Create editable exercise item
+        const exerciseItem = createEditableCustomDayExerciseItem(newExercise, newIndex);
+        exerciseList.appendChild(exerciseItem);
+    }
+
+    // Create editable exercise item for custom day
+    function createEditableCustomDayExerciseItem(exercise, index) {
+        const listItem = document.createElement('li');
+        listItem.className = 'custom-day-exercise-item editable-exercise';
+        listItem.dataset.index = index;
+
+        listItem.innerHTML = `
+            <div class="exercise-dropdowns">
+                <select class="muscle-group-select" data-index="${index}">
+                    <option value="">Select Muscle Group</option>
+                    <option value="chest">Chest</option>
+                    <option value="back">Back</option>
+                    <option value="legs">Legs</option>
+                    <option value="shoulders">Shoulders</option>
+                    <option value="arms">Arms</option>
+                    <option value="core">Core</option>
+                </select>
+                <select class="exercise-select" data-index="${index}" disabled>
+                    <option value="">Select Exercise</option>
+                </select>
+                <input type="text" class="custom-exercise-input" data-index="${index}" 
+                       placeholder="Enter custom exercise name..." 
+                       style="display: none;">
+                <button class="confirm-exercise-btn" data-index="${index}" disabled>
+                    <i class="fas fa-check"></i> Confirm
+                </button>
+            </div>
+            <div class="custom-day-exercise-actions">
+                <button class="custom-day-exercise-btn delete-btn" title="Remove exercise">
+                    <i class="fas fa-trash"></i>
+                </button>
             </div>
         `;
 
-        document.body.appendChild(modal);
+        // Add the same dropdown logic as in regular exercise creation
+        setupCustomDayExerciseDropdowns(listItem, index);
 
-        // Set up modal functionality
-        const muscleGroupSelect = modal.querySelector('#exerciseMuscleGroup');
-        const exerciseNameSelect = modal.querySelector('#exerciseName');
-        const customExerciseInput = modal.querySelector('#customExerciseName');
-        const addBtn = modal.querySelector('#addExerciseToTemplate');
-        const cancelBtn = modal.querySelector('#cancelExerciseAdd');
-        const closeBtn = modal.querySelector('.close-modal');
+        return listItem;
+    }
 
-        // Populate exercise dropdown based on muscle group
+    // Setup dropdowns for custom day exercise
+    function setupCustomDayExerciseDropdowns(listItem, index) {
+        const muscleGroupSelect = listItem.querySelector('.muscle-group-select');
+        const exerciseSelect = listItem.querySelector('.exercise-select');
+        const customExerciseInput = listItem.querySelector('.custom-exercise-input');
+        const confirmBtn = listItem.querySelector('.confirm-exercise-btn');
+
+        // Muscle group change handler
         muscleGroupSelect.addEventListener('change', () => {
             const selectedMuscleGroup = muscleGroupSelect.value;
-            exerciseNameSelect.innerHTML = '<option value="">Select Exercise</option>';
 
+            // Reset exercise dropdown
+            exerciseSelect.innerHTML = '<option value="">Select Exercise</option>';
+            customExerciseInput.style.display = 'none';
+            customExerciseInput.value = '';
+            exerciseSelect.disabled = !selectedMuscleGroup;
+
+            // Add custom option
+            if (selectedMuscleGroup) {
+                const customOption = document.createElement('option');
+                customOption.value = 'custom';
+                customOption.textContent = '🎯 Custom Exercise';
+                exerciseSelect.appendChild(customOption);
+
+                const separator = document.createElement('option');
+                separator.disabled = true;
+                separator.textContent = '─────────────────';
+                exerciseSelect.appendChild(separator);
+            }
+
+            // Populate exercise dropdown
             if (selectedMuscleGroup && exercises[selectedMuscleGroup]) {
                 exercises[selectedMuscleGroup].forEach(exerciseName => {
                     const option = document.createElement('option');
                     option.value = exerciseName;
                     option.textContent = exerciseName;
-                    exerciseNameSelect.appendChild(option);
+                    exerciseSelect.appendChild(option);
                 });
-                exerciseNameSelect.disabled = false;
-            } else {
-                exerciseNameSelect.disabled = true;
+                exerciseSelect.disabled = false;
             }
+
+            updateConfirmButtonState();
         });
 
-        // Add exercise
-        addBtn.addEventListener('click', () => {
-            const muscleGroup = muscleGroupSelect.value;
-            const exerciseName = exerciseNameSelect.value || customExerciseInput.value.trim();
-            const sets = parseInt(modal.querySelector('#exerciseSets').value);
-            const reps = modal.querySelector('#exerciseReps').value.trim();
+        // Exercise change handler
+        exerciseSelect.addEventListener('change', () => {
+            const selectedExercise = exerciseSelect.value;
 
-            if (!muscleGroup || !exerciseName || !sets || !reps) {
-                alert('Please fill in all fields');
+            if (selectedExercise === 'custom') {
+                customExerciseInput.style.display = 'block';
+                customExerciseInput.focus();
+            } else {
+                customExerciseInput.style.display = 'none';
+                customExerciseInput.value = '';
+            }
+
+            updateConfirmButtonState();
+        });
+
+        // Custom exercise input handler
+        customExerciseInput.addEventListener('input', updateConfirmButtonState);
+
+        // Update confirm button state
+        function updateConfirmButtonState() {
+            let hasValues = false;
+
+            if (muscleGroupSelect.value) {
+                if (exerciseSelect.value === 'custom') {
+                    hasValues = customExerciseInput.value.trim().length > 0;
+                } else if (exerciseSelect.value) {
+                    hasValues = true;
+                }
+            }
+
+            confirmBtn.disabled = !hasValues;
+            if (hasValues) {
+                confirmBtn.classList.add('enabled');
+            } else {
+                confirmBtn.classList.remove('enabled');
+            }
+        }
+
+        // Confirm button handler
+        confirmBtn.addEventListener('click', () => {
+            const selectedMuscleGroup = muscleGroupSelect.value;
+            let selectedExercise = exerciseSelect.value;
+
+            if (selectedExercise === 'custom') {
+                selectedExercise = customExerciseInput.value.trim();
+            }
+
+            if (!selectedMuscleGroup || !selectedExercise) {
+                alert('Please select both muscle group and exercise');
                 return;
             }
 
-            const exercise = {
+            // Update the exercise in the current custom split
+            currentCustomSplit.days[currentEditingDayIndex].exercises[index] = {
                 id: generateExerciseId(),
-                muscleGroup: muscleGroup,
-                exercise: exerciseName,
-                defaultSets: sets,
-                defaultReps: reps,
+                muscleGroup: selectedMuscleGroup,
+                exercise: selectedExercise,
+                defaultSets: 3,
+                defaultReps: getDefaultRepsForMuscleGroup(selectedMuscleGroup),
                 isLogged: false
             };
 
-            addExerciseToTemplateDay(targetExercisesList, exercise);
-            modal.remove();
+            // Re-render the exercises
+            renderCustomDayExercises(currentCustomSplit.days[currentEditingDayIndex].exercises);
         });
 
-        // Cancel/close handlers
-        [cancelBtn, closeBtn].forEach(btn => {
-            btn.addEventListener('click', () => modal.remove());
-        });
-
-        // Close on outside click
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) modal.remove();
+        // Delete button handler
+        const deleteBtn = listItem.querySelector('.delete-btn');
+        deleteBtn.addEventListener('click', () => {
+            deleteExerciseFromCustomDay(index);
         });
     }
 
-    // Update exercise count in day card
-    function updateExerciseCount(exercisesList) {
-        const dayCard = exercisesList.closest('.template-day-card');
-        const countElement = dayCard.querySelector('.exercise-count');
-        const exerciseCount = exercisesList.children.length;
-        countElement.textContent = exerciseCount;
-    }
-
-    // Update template day counter
-    function updateTemplateDayCounter() {
-        const templateDaysList = document.getElementById('templateDaysList');
-        const dayCards = templateDaysList.querySelectorAll('.template-day-card');
-
-        // Update the section header if needed
-        const sectionHeader = document.querySelector('.template-days-section .section-header h4');
-        if (sectionHeader) {
-            sectionHeader.textContent = `Template Days (${dayCards.length})`;
+    // Delete exercise from custom day
+    function deleteExerciseFromCustomDay(index) {
+        if (confirm('Remove this exercise?')) {
+            currentCustomSplit.days[currentEditingDayIndex].exercises.splice(index, 1);
+            renderCustomDayExercises(currentCustomSplit.days[currentEditingDayIndex].exercises);
         }
     }
 
-    // Template Builder Event Listeners
-    const backToTemplatesBtn = document.getElementById('backToTemplates');
-    const addDayBtn = document.getElementById('addDay');
-    const saveTemplateBtn = document.getElementById('saveTemplate');
-    const cancelTemplateBtn = document.getElementById('cancelTemplate');
+    // Delete custom day
+    function deleteCustomDay(index) {
+        if (currentCustomSplit.days.length <= 1) {
+            alert('You must have at least one day in your split');
+            return;
+        }
 
-    if (backToTemplatesBtn) {
-        backToTemplatesBtn.addEventListener('click', () => {
-            document.getElementById('templateBuilder').style.display = 'none';
-            document.querySelector('.workout-templates').style.display = 'block';
-            // Reset to split selection view
-            splitSelectionStep.style.display = 'block';
-            daySelectionStep.style.display = 'none';
-        });
-    }
-
-    if (addDayBtn) {
-        addDayBtn.addEventListener('click', () => {
-            templateDayCounter++;
-            createTemplateDayCard(`day${templateDayCounter}`, `Day ${templateDayCounter}`, []);
-        });
-    }
-
-    if (saveTemplateBtn) {
-        saveTemplateBtn.addEventListener('click', () => {
-            const templateName = document.getElementById('templateName').value.trim();
-            if (!templateName) {
-                alert('Please enter a template name');
-                return;
-            }
-
-            // Collect template data
-            const templateData = {
-                name: templateName,
-                splits: {},
-                isMultiDay: true
-            };
-
-            const dayCards = document.querySelectorAll('.template-day-card');
-            if (dayCards.length === 0) {
-                alert('Please add at least one day to your template');
-                return;
-            }
-
-            dayCards.forEach(dayCard => {
-                const dayId = dayCard.dataset.dayId;
-                const dayName = dayCard.querySelector('.day-name-input').value.trim();
-
-                if (!dayName) {
-                    alert('Please give all days a name');
-                    return;
-                }
-
-                // Collect exercises for this day
-                const exercises = [];
-                const exerciseItems = dayCard.querySelectorAll('.template-exercise-item');
-
-                exerciseItems.forEach(item => {
-                    const name = item.querySelector('.template-exercise-name').textContent;
-                    const details = item.querySelector('.template-exercise-details').textContent;
-
-                    // Parse details to extract muscle group, sets, and reps
-                    const detailsParts = details.split(' • ');
-                    const muscleGroup = detailsParts[0];
-                    const setsReps = detailsParts[1];
-                    const setsPart = setsReps.split(' sets')[0];
-                    const repsPart = setsReps.split('× ')[1].split(' reps')[0];
-
-                    exercises.push({
-                        id: generateExerciseId(),
-                        muscleGroup: muscleGroup,
-                        exercise: name,
-                        defaultSets: parseInt(setsPart),
-                        defaultReps: repsPart,
-                        isLogged: false
-                    });
-                });
-
-                templateData.splits[dayId] = {
-                    name: dayName,
-                    exercises: exercises
-                };
-            });
-
-            // Validate template
-            const validation = validateTemplate(templateData);
-            if (!validation.valid) {
-                alert(validation.error);
-                return;
-            }
-
-            // Save template
-            const templateKey = currentEditingTemplate || templateName.toLowerCase().replace(/\s+/g, '_');
-            saveCustomTemplateSplit(templateKey, templateData);
-
-            alert(`Template "${templateName}" saved successfully!`);
-
-            // Go back to templates view
-            document.getElementById('templateBuilder').style.display = 'none';
-            document.querySelector('.workout-templates').style.display = 'block';
-            splitSelectionStep.style.display = 'block';
-            daySelectionStep.style.display = 'none';
-
-            // Refresh custom templates if we're in that view
-            if (selectedSplitType === 'custom') {
-                generateDayCards('custom');
-            }
-        });
-    }
-
-    if (cancelTemplateBtn) {
-        cancelTemplateBtn.addEventListener('click', () => {
-            if (confirm('Are you sure you want to cancel? Any unsaved changes will be lost.')) {
-                document.getElementById('templateBuilder').style.display = 'none';
-                document.querySelector('.workout-templates').style.display = 'block';
-                splitSelectionStep.style.display = 'block';
-                daySelectionStep.style.display = 'none';
-            }
-        });
+        if (confirm(`Delete ${currentCustomSplit.days[index].name}?`)) {
+            currentCustomSplit.days.splice(index, 1);
+            renderCustomDays();
+        }
     }
 } 

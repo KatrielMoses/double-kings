@@ -105,11 +105,17 @@
                                 </div>
                                 <div class="split-name">Full Body</div>
                             </div>
+                            <div class="split-card" data-split="createCustom">
+                                <div class="split-icon">
+                                    <i class="fas fa-plus-circle"></i>
+                                </div>
+                                <div class="split-name">Create Custom Split</div>
+                            </div>
                             <div class="split-card" data-split="custom">
                                 <div class="split-icon">
                                     <i class="fas fa-star"></i>
                                 </div>
-                                <div class="split-name">Custom Templates</div>
+                                <div class="split-name">Saved Templates</div>
                             </div>
                         </div>
                     </div>
@@ -122,6 +128,79 @@
                         </div>
                         <div class="day-grid" id="workoutDayGrid">
                             <!-- Day cards will be added dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Create Custom Split (initially hidden) -->
+                    <div class="template-step" id="customSplitStep" style="display: none;">
+                        <div class="step-header">
+                            <button class="back-btn" id="backToSplitsFromCustom"><i class="fas fa-arrow-left"></i>
+                                Back</button>
+                            <h3 class="step-title">Create Custom Split</h3>
+                        </div>
+
+                        <div class="custom-split-container">
+                            <div class="custom-split-header">
+                                <div class="form-group">
+                                    <label for="customSplitName">Split Name</label>
+                                    <input type="text" id="customSplitName"
+                                        placeholder="Enter split name (e.g., My Upper/Lower Split)" maxlength="50">
+                                </div>
+                                <button id="saveCustomSplit" class="secondary-btn">
+                                    <i class="fas fa-save"></i> Save Split
+                                </button>
+                            </div>
+
+                            <div class="custom-days-section">
+                                <div class="custom-days-header">
+                                    <h4>Workout Days</h4>
+                                    <button id="addCustomDay" class="add-exercise-btn">
+                                        <i class="fas fa-plus"></i> Add Day
+                                    </button>
+                                </div>
+
+                                <div class="custom-days-grid" id="customDaysGrid">
+                                    <!-- Custom day cards will be added here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 4: Edit Custom Day (initially hidden) -->
+                    <div class="template-step" id="editCustomDayStep" style="display: none;">
+                        <div class="step-header">
+                            <button class="back-btn" id="backToCustomSplit"><i class="fas fa-arrow-left"></i> Back to
+                                Split</button>
+                            <h3 class="step-title" id="editDayTitle">Edit Day</h3>
+                        </div>
+
+                        <div class="edit-day-container">
+                            <div class="day-name-section">
+                                <div class="form-group">
+                                    <label for="customDayName">Day Name</label>
+                                    <input type="text" id="customDayName" placeholder="Enter day name (e.g., Push Day)"
+                                        maxlength="30">
+                                </div>
+                            </div>
+
+                            <div class="day-exercises-section">
+                                <div class="exercise-list-header">
+                                    <h4>Exercises</h4>
+                                    <button id="addExerciseToDay" class="add-exercise-btn">
+                                        <i class="fas fa-plus"></i> Add Exercise
+                                    </button>
+                                </div>
+
+                                <ul id="customDayExerciseList" class="exercise-list">
+                                    <!-- Custom day exercises will be added here -->
+                                </ul>
+                            </div>
+
+                            <div class="edit-day-actions">
+                                <button id="finishEditingDay" class="secondary-btn">
+                                    <i class="fas fa-check"></i> Finish Editing Day
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -139,49 +218,6 @@
                         <button type="button" id="loadTemplate" class="secondary-btn">Load Template</button>
                         <button type="button" id="saveAsTemplate" class="secondary-btn">Save Current as
                             Template</button>
-                    </div>
-                </div>
-
-                <!-- Template Builder Section (initially hidden) -->
-                <div class="template-builder" id="templateBuilder" style="display: none;">
-                    <h2 class="section-title">Template Builder</h2>
-
-                    <div class="template-step">
-                        <div class="step-header">
-                            <button class="back-btn" id="backToTemplates"><i class="fas fa-arrow-left"></i> Back to
-                                Templates</button>
-                            <h3 class="step-title">Create/Edit Custom Template</h3>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="templateName">Template Name</label>
-                            <input type="text" id="templateName"
-                                placeholder="Enter template name (e.g., 'My Push/Pull/Legs')" required>
-                        </div>
-
-                        <div class="template-days-section">
-                            <div class="section-header">
-                                <h4>Template Days</h4>
-                                <div class="day-controls">
-                                    <button type="button" id="addDay" class="secondary-btn">
-                                        <i class="fas fa-plus"></i> Add Day
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div id="templateDaysList" class="template-days-list">
-                                <!-- Template days will be added here dynamically -->
-                            </div>
-                        </div>
-
-                        <div class="template-builder-actions">
-                            <button type="button" id="saveTemplate" class="submit-btn">
-                                <i class="fas fa-save"></i> Save Template
-                            </button>
-                            <button type="button" id="cancelTemplate" class="secondary-btn">
-                                Cancel
-                            </button>
-                        </div>
                     </div>
                 </div>
 
