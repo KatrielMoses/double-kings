@@ -142,6 +142,49 @@
                     </div>
                 </div>
 
+                <!-- Template Builder Section (initially hidden) -->
+                <div class="template-builder" id="templateBuilder" style="display: none;">
+                    <h2 class="section-title">Template Builder</h2>
+
+                    <div class="template-step">
+                        <div class="step-header">
+                            <button class="back-btn" id="backToTemplates"><i class="fas fa-arrow-left"></i> Back to
+                                Templates</button>
+                            <h3 class="step-title">Create/Edit Custom Template</h3>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="templateName">Template Name</label>
+                            <input type="text" id="templateName"
+                                placeholder="Enter template name (e.g., 'My Push/Pull/Legs')" required>
+                        </div>
+
+                        <div class="template-days-section">
+                            <div class="section-header">
+                                <h4>Template Days</h4>
+                                <div class="day-controls">
+                                    <button type="button" id="addDay" class="secondary-btn">
+                                        <i class="fas fa-plus"></i> Add Day
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div id="templateDaysList" class="template-days-list">
+                                <!-- Template days will be added here dynamically -->
+                            </div>
+                        </div>
+
+                        <div class="template-builder-actions">
+                            <button type="button" id="saveTemplate" class="submit-btn">
+                                <i class="fas fa-save"></i> Save Template
+                            </button>
+                            <button type="button" id="cancelTemplate" class="secondary-btn">
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Exercise List Column (initially hidden) -->
                 <div id="exerciseListContainer" class="exercise-list-container" style="display: none;">
                     <h3 class="section-title">Exercises to Complete</h3>
