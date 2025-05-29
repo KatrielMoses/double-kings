@@ -24,7 +24,7 @@
     "license": "MIT",
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/YOUR_USERNAME/fitness-website.git"
+        "url": "https://github.com/YOUR_USERNAME/fitness-website.git"
     },
     "homepage": "https://github.com/YOUR_USERNAME/fitness-website#readme",
     "engines": {
@@ -39,9 +39,5 @@
         "> 1%",
         "last 2 versions",
         "not dead"
-    ],
-    "type": "commonjs",
-    "bugs": {
-        "url": "https://github.com/YOUR_USERNAME/fitness-website/issues"
-    }
+    ]
 }

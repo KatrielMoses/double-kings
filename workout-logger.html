@@ -5,323 +5,198 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Workout Logger - Double Kings Fitness</title>
-
-    <!-- TailwindCSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="styles/modern.css">
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/background.css">
     <link rel="stylesheet" href="styles/workout-logger.css">
-
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-    <!-- Google Fonts -->
+    <link rel="stylesheet" href="styles/workout-logger-animations.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap"
         rel="stylesheet">
-
-    <!-- Supabase -->
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-
-    <!-- Animation Libraries -->
-    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        primary: {
-                            50: '#f0f9ff',
-                            100: '#e0f2fe',
-                            200: '#bae6fd',
-                            300: '#7dd3fc',
-                            400: '#38bdf8',
-                            500: '#0ea5e9',
-                            600: '#0284c7',
-                            700: '#0369a1',
-                            800: '#075985',
-                            900: '#0c4a6e',
-                        },
-                        accent: {
-                            500: '#f59e0b',
-                            600: '#d97706',
-                            700: '#b45309',
-                        },
-                        dark: {
-                            800: '#1f2937',
-                            900: '#111827',
-                        }
-                    },
-                    fontFamily: {
-                        'inter': ['Inter', 'sans-serif'],
-                        'poppins': ['Poppins', 'sans-serif'],
-                    },
-                }
-            }
-        }
-    </script>
 </head>
 
-<body class="font-inter bg-gradient-to-br from-gray-900 via-blue-900 to-gray-800 min-h-screen">
-    <!-- Bodybuilder Background -->
-    <div class="fixed inset-0 z-0 overflow-hidden">
-        <div class="absolute inset-0 bg-gradient-to-br from-gray-900/95 via-blue-900/90 to-gray-800/95"></div>
-        <div class="absolute bottom-0 right-0 w-96 h-96 md:w-[500px] md:h-[500px] opacity-10">
-            <svg viewBox="0 0 400 400" class="w-full h-full">
-                <!-- Bodybuilder Squatting Silhouette -->
-                <path d="M200 50 C190 50 185 60 185 70 L185 85 C185 90 190 95 200 95 C210 95 215 90 215 85 L215 70 C215 60 210 50 200 50 Z
-                         M180 95 L220 95 L225 105 L225 120 C225 125 220 130 215 130 L185 130 C180 130 175 125 175 120 L175 105 Z
-                         M175 130 L160 140 L150 160 L155 180 L170 175 L175 160 L185 150 Z
-                         M225 130 L240 140 L250 160 L245 180 L230 175 L225 160 L215 150 Z
-                         M185 150 L215 150 L220 170 L220 200 L210 220 L205 240 L200 260 L195 240 L190 220 L180 200 L180 170 Z
-                         M180 200 L160 210 L140 230 L130 250 L125 270 L135 280 L150 275 L165 265 L175 250 L180 230 Z
-                         M220 200 L240 210 L260 230 L270 250 L275 270 L265 280 L250 275 L235 265 L225 250 L220 230 Z
-                         M200 260 L190 280 L185 300 L180 320 L175 340 L180 350 L190 345 L195 325 L200 305 Z
-                         M200 260 L210 280 L215 300 L220 320 L225 340 L220 350 L210 345 L205 325 L200 305 Z
-                         M175 340 L165 355 L160 370 L170 375 L180 370 L185 355 Z
-                         M225 340 L235 355 L240 370 L230 375 L220 370 L215 355 Z" fill="currentColor"
-                    class="text-white" />
-            </svg>
+<body>
+    <!-- Mountain Background -->
+    <div class="mountain-background">
+        <div class="stars"></div>
+        <div class="clouds"></div>
+        <div class="mountains">
+            <div class="mountain-back"></div>
+            <div class="mountain-mid"></div>
+            <div class="mountain-front"></div>
         </div>
     </div>
 
-    <!-- Navigation -->
-    <nav class="relative z-10 bg-black/20 backdrop-blur-md border-b border-white/10">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <!-- Logo -->
-                <a href="index.html" class="flex items-center space-x-3">
-                    <div class="flex items-center space-x-1">
-                        <i class="fas fa-crown text-accent-500 text-xl"></i>
-                        <i class="fas fa-crown text-accent-600 text-xl"></i>
-                    </div>
-                    <span class="text-white font-bold text-xl font-poppins">Double Kings</span>
-                </a>
-
-                <!-- Desktop Navigation -->
-                <div class="hidden md:flex items-center space-x-8">
-                    <a href="index.html" class="text-gray-300 hover:text-white transition-colors">Home</a>
-                    <a href="#" class="text-white font-medium">Workout Logger</a>
-                    <a href="progress-monitoring.html"
-                        class="text-gray-300 hover:text-white transition-colors">Progress</a>
-                    <a href="goal-setting.html" class="text-gray-300 hover:text-white transition-colors">Goals</a>
-                </div>
-
-                <!-- User Profile -->
-                <div class="flex items-center space-x-4">
-                    <div class="flex items-center space-x-2 text-white">
-                        <span id="user-name" class="font-medium">User</span>
-                        <button id="logoutBtn" class="text-gray-300 hover:text-white transition-colors">
-                            <i class="fas fa-sign-out-alt"></i>
-                        </button>
+    <nav class="navbar">
+        <div class="logo">
+            <div class="logo-icon">
+                <span class="crown-left"><i class="fas fa-crown"></i></span>
+                <span class="crown-right"><i class="fas fa-crown"></i></span>
+            </div>
+            <span class="logo-text">Double Kings</span>
+        </div>
+        <div class="nav-links">
+            <a href="index.html" class="nav-link">Home</a>
+            <a href="workout-logger.html" class="nav-link active">Workout Logger</a>
+            <a href="progress-monitoring.html" class="nav-link">Progress Monitoring</a>
+            <a href="goal-setting.html" class="nav-link">Goal Setting</a>
+            <div class="auth-section">
+                <div class="user-profile" id="userProfile">
+                    <span id="user-name">User</span>
+                    <i class="fas fa-chevron-down"></i>
+                    <div class="user-dropdown">
+                        <a href="workout-logger.html" class="dropdown-item">
+                            <i class="fas fa-dumbbell"></i> Workout Logger
+                        </a>
+                        <a href="progress-monitoring.html" class="dropdown-item">
+                            <i class="fas fa-chart-line"></i> Progress Monitoring
+                        </a>
+                        <a href="goal-setting.html" class="dropdown-item">
+                            <i class="fas fa-bullseye"></i> Goal Setting
+                        </a>
+                        <div class="dropdown-divider"></div>
+                        <a href="#" class="dropdown-item" id="logoutBtn">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
     </nav>
 
-    <!-- Main Content -->
-    <main class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <!-- Header -->
-        <div class="text-center mb-8" data-aos="fade-up">
-            <h1 class="text-3xl md:text-4xl font-bold text-white mb-2 font-poppins">
-                Workout Logger
-            </h1>
-            <p class="text-gray-300 text-lg">Track your exercises and build strength</p>
-        </div>
+    <main class="workout-logger">
+        <div class="container">
+            <header class="page-header">
+                <h1>Log Your Workout</h1>
+                <p class="subtitle">Track your progress, celebrate your gains</p>
+                <p class="date-info"><i class="fas fa-calendar-alt"></i> You can log workouts for today or previous
+                    dates</p>
+            </header>
 
-        <!-- Workout Setup Card -->
-        <div class="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 mb-8" data-aos="fade-up"
-            data-aos-delay="100">
-            <h2 class="text-xl font-semibold text-white mb-4 flex items-center">
-                <i class="fas fa-calendar-alt mr-2 text-accent-500"></i>
-                Workout Setup
-            </h2>
+            <div class="workout-content">
+                <!-- Workout Templates Section -->
+                <div class="workout-templates">
+                    <h2 class="section-title">Workout Templates</h2>
 
-            <div class="grid md:grid-cols-2 gap-4">
-                <div>
-                    <label for="workoutDate" class="block text-sm font-medium text-gray-300 mb-1">Date</label>
-                    <input type="date" id="workoutDate"
-                        class="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent">
-                </div>
-                <div>
-                    <label for="weightUnit" class="block text-sm font-medium text-gray-300 mb-1">Weight Unit</label>
-                    <select id="weightUnit"
-                        class="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent">
-                        <option value="kg">Kilograms (kg)</option>
-                        <option value="lbs">Pounds (lbs)</option>
-                    </select>
-                </div>
-            </div>
-        </div>
-
-        <!-- Template Selection -->
-        <div class="workout-templates mb-8" data-aos="fade-up" data-aos-delay="200">
-            <div class="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6">
-                <h2 class="text-xl font-semibold text-white mb-6 flex items-center">
-                    <i class="fas fa-clipboard-list mr-2 text-accent-500"></i>
-                    Choose Your Workout
-                </h2>
-
-                <!-- Split Selection Step -->
-                <div id="splitSelectionStep">
-                    <p class="text-gray-300 mb-6">Select a workout split to get started:</p>
-                    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <!-- Push/Pull/Legs -->
-                        <div class="split-card bg-white/5 hover:bg-white/10 border border-white/20 rounded-xl p-6 cursor-pointer transition-all duration-300 hover:scale-105"
-                            data-split="pushPullLegs">
-                            <div class="text-center">
-                                <div
-                                    class="w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-xl flex items-center justify-center mb-4 mx-auto">
-                                    <i class="fas fa-hand-rock text-white text-xl"></i>
-                                </div>
-                                <h3 class="text-lg font-semibold text-white mb-2">Push/Pull/Legs</h3>
-                                <p class="text-gray-400 text-sm">3-day split focusing on movement patterns</p>
-                            </div>
+                    <!-- Step 1: Select Workout Split -->
+                    <div class="template-step" id="splitSelectionStep">
+                        <div class="step-header">
+                            <h3 class="step-title">Select Workout Split</h3>
                         </div>
-
-                        <!-- Upper/Lower -->
-                        <div class="split-card bg-white/5 hover:bg-white/10 border border-white/20 rounded-xl p-6 cursor-pointer transition-all duration-300 hover:scale-105"
-                            data-split="upperLower">
-                            <div class="text-center">
-                                <div
-                                    class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mb-4 mx-auto">
-                                    <i class="fas fa-arrows-alt-v text-white text-xl"></i>
+                        <div class="split-grid">
+                            <div class="split-card" data-split="pushPullLegs">
+                                <div class="split-icon">
+                                    <i class="fas fa-dumbbell"></i>
                                 </div>
-                                <h3 class="text-lg font-semibold text-white mb-2">Upper/Lower</h3>
-                                <p class="text-gray-400 text-sm">4-day split alternating body regions</p>
+                                <div class="split-name">Push/Pull/Legs</div>
                             </div>
-                        </div>
-
-                        <!-- Full Body -->
-                        <div class="split-card bg-white/5 hover:bg-white/10 border border-white/20 rounded-xl p-6 cursor-pointer transition-all duration-300 hover:scale-105"
-                            data-split="fullBody">
-                            <div class="text-center">
-                                <div
-                                    class="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center mb-4 mx-auto">
-                                    <i class="fas fa-user text-white text-xl"></i>
+                            <div class="split-card" data-split="upperLower">
+                                <div class="split-icon">
+                                    <i class="fas fa-exchange-alt"></i>
                                 </div>
-                                <h3 class="text-lg font-semibold text-white mb-2">Full Body</h3>
-                                <p class="text-gray-400 text-sm">Complete workouts every session</p>
+                                <div class="split-name">Upper/Lower</div>
                             </div>
-                        </div>
-
-                        <!-- Custom -->
-                        <div class="split-card bg-white/5 hover:bg-white/10 border border-white/20 rounded-xl p-6 cursor-pointer transition-all duration-300 hover:scale-105"
-                            data-split="custom">
-                            <div class="text-center">
-                                <div
-                                    class="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center mb-4 mx-auto">
-                                    <i class="fas fa-star text-white text-xl"></i>
+                            <div class="split-card" data-split="fullBody">
+                                <div class="split-icon">
+                                    <i class="fas fa-user"></i>
                                 </div>
-                                <h3 class="text-lg font-semibold text-white mb-2">Custom Templates</h3>
-                                <p class="text-gray-400 text-sm">Your saved workout templates</p>
+                                <div class="split-name">Full Body</div>
+                            </div>
+                            <div class="split-card" data-split="custom">
+                                <div class="split-icon">
+                                    <i class="fas fa-star"></i>
+                                </div>
+                                <div class="split-name">Custom Templates</div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Day Selection Step -->
-                <div id="daySelectionStep" class="hidden">
-                    <div class="flex items-center justify-between mb-6">
-                        <h3 class="text-lg font-semibold text-white">Select Workout Day</h3>
-                        <button id="backToSplits" class="text-gray-300 hover:text-white transition-colors">
-                            <i class="fas fa-arrow-left mr-2"></i>Back to Splits
-                        </button>
+                    <!-- Step 2: Select Workout Day (initially hidden) -->
+                    <div class="template-step" id="daySelectionStep" style="display: none;">
+                        <div class="step-header">
+                            <button class="back-btn" id="backToSplits"><i class="fas fa-arrow-left"></i> Back</button>
+                            <h3 class="step-title">Select Workout Day</h3>
+                        </div>
+                        <div class="day-grid" id="workoutDayGrid">
+                            <!-- Day cards will be added dynamically -->
+                        </div>
                     </div>
-                    <div id="workoutDayGrid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <!-- Dynamic day cards will be inserted here -->
-                    </div>
-                    <div class="mt-6 text-center">
-                        <button id="loadTemplate"
-                            class="px-6 py-3 bg-gradient-to-r from-accent-600 to-accent-700 hover:from-accent-700 hover:to-accent-800 text-white rounded-xl font-semibold transition-all duration-300 hover:scale-105">
-                            <i class="fas fa-play mr-2"></i>Load Workout
-                        </button>
-                    </div>
-                </div>
 
-                <!-- Hidden select elements for compatibility -->
-                <select id="workoutSplit" class="hidden">
-                    <option value="">Select Split</option>
-                    <option value="pushPullLegs">Push/Pull/Legs</option>
-                    <option value="upperLower">Upper/Lower</option>
-                    <option value="fullBody">Full Body</option>
-                    <option value="custom">Custom Templates</option>
-                </select>
-                <select id="workoutDay" class="hidden">
-                    <option value="">Select Day</option>
-                </select>
-            </div>
-        </div>
+                    <!-- Hidden form selects for compatibility with existing code -->
+                    <div style="display: none;">
+                        <select id="workoutSplit">
+                            <option value="">Choose a Split</option>
+                        </select>
+                        <select id="workoutDay">
+                            <option value="">Choose a Day</option>
+                        </select>
+                    </div>
 
-        <!-- Exercise List Container -->
-        <div id="exerciseListContainer" class="hidden" data-aos="fade-up" data-aos-delay="300">
-            <div class="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 mb-6">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-xl font-semibold text-white flex items-center">
-                        <i class="fas fa-dumbbell mr-2 text-accent-500"></i>
-                        Your Workout
-                    </h2>
-                    <div class="flex space-x-3">
-                        <button id="addExerciseBtn"
-                            class="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition-colors">
-                            <i class="fas fa-plus mr-2"></i>Add Exercise
-                        </button>
-                        <button id="saveAsTemplateBtn"
-                            class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium transition-colors">
-                            <i class="fas fa-save mr-2"></i>Save Template
-                        </button>
+                    <div class="template-actions">
+                        <button type="button" id="loadTemplate" class="secondary-btn">Load Template</button>
+                        <button type="button" id="saveAsTemplate" class="secondary-btn">Save Current as
+                            Template</button>
                     </div>
                 </div>
 
-                <ul id="exerciseList" class="space-y-4">
-                    <!-- Dynamic exercise items will be inserted here -->
-                </ul>
+                <!-- Exercise List Column (initially hidden) -->
+                <div id="exerciseListContainer" class="exercise-list-container" style="display: none;">
+                    <h3 class="section-title">Exercises to Complete</h3>
+                    <div class="workout-date-container">
+                        <div class="form-group">
+                            <label for="workoutDate">Workout Date</label>
+                            <input type="date" id="workoutDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="weightUnit">Weight Unit</label>
+                            <select id="weightUnit" required>
+                                <option value="kg">Kilograms (kg)</option>
+                                <option value="lbs">Pounds (lbs)</option>
+                            </select>
+                        </div>
+                    </div>
 
-                <div class="mt-6 text-center">
-                    <button id="saveWorkoutBtn"
-                        class="px-8 py-3 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-xl font-semibold text-lg transition-all duration-300 hover:scale-105">
-                        <i class="fas fa-check-circle mr-2"></i>Complete Workout
-                    </button>
+                    <div class="exercise-list-header">
+                        <div class="exercise-list-title">Drag to reorder exercises</div>
+                        <button id="addExerciseBtn" class="add-exercise-btn">
+                            <i class="fas fa-plus"></i> Add Exercise
+                        </button>
+                    </div>
+
+                    <ul id="exerciseList" class="exercise-list">
+                        <!-- Exercise items will be added here dynamically -->
+                    </ul>
+
+                    <div class="form-actions">
+                        <button type="button" id="saveWorkoutBtn" class="submit-btn">Save Workout</button>
+                    </div>
                 </div>
-            </div>
-        </div>
 
-        <!-- Workout History -->
-        <div class="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6" data-aos="fade-up"
-            data-aos-delay="400">
-            <h2 class="text-xl font-semibold text-white mb-6 flex items-center">
-                <i class="fas fa-history mr-2 text-accent-500"></i>
-                Recent Workouts
-            </h2>
+                <!-- Add Exercise Modal -->
+                <div id="addExerciseModal" class="modal" style="display: none;">
+                    <!-- Modal content hidden since we're using inline editing now -->
+                </div>
 
-            <div id="workoutList" class="space-y-3">
-                <!-- Dynamic workout entries will be inserted here -->
-                <div class="text-center text-gray-400 py-8">
-                    <i class="fas fa-clipboard-list text-4xl mb-4 opacity-50"></i>
-                    <p>No workouts logged yet. Start your first workout above!</p>
+                <!-- Remove exercise details section since we're doing inline logging -->
+                <div id="exerciseDetailsSection" class="form-section" style="display: none;"></div>
+
+                <div class="workout-history">
+                    <h2 class="section-title">Workout History</h2>
+                    <div id="workoutList" class="workout-list">
+                        <!-- Workout entries will be added here -->
+                    </div>
                 </div>
             </div>
         </div>
     </main>
 
-    <!-- Scripts -->
-    <script type="module" src="js/supabase-config.js"></script>
     <script type="module" src="js/main.js"></script>
     <script type="module" src="js/workout-logger.js"></script>
-    <script>
-        // Initialize AOS
-        AOS.init({
-            duration: 800,
-            easing: 'ease-out-cubic',
-            once: true
-        });
-    </script>
+    <script type="module" src="js/ui-interactions.js"></script>
+    <script type="module" src="js/workout-templates.js"></script>
 </body>
 
 </html>

@@ -13,17 +13,34 @@ function getWorkoutList() {
     return workoutList;
 }
 
-// Store exercise data with user history - Updated to use Supabase
-async function storeExerciseHistory(exerciseName, muscleGroup, sets) {
+// Store exercise data with user history
+function storeExerciseHistory(exerciseName, muscleGroup, sets) {
     try {
-        if (!currentUser) {
-            console.log('No user logged in, cannot store exercise history');
-            return false;
+        // Get existing exercise history or create a new object
+        const exerciseHistory = JSON.parse(localStorage.getItem('exerciseHistory')) || {};
+
+        // Create entry for this exercise if it doesn't exist
+        if (!exerciseHistory[exerciseName]) {
+            exerciseHistory[exerciseName] = {
+                muscleGroup: muscleGroup,
+                history: []
+            };
         }
 
-        // This function is now redundant since workouts are saved directly to Supabase
-        // in the logExercise function. Keeping for backward compatibility.
-        console.log(`Exercise history for ${exerciseName} is now stored directly in Supabase`);
+        // Add new entry at the beginning of history array (most recent first)
+        exerciseHistory[exerciseName].history.unshift({
+            date: new Date().toISOString(),
+            sets: sets
+        });
+
+        // Limit history to last 10 entries to prevent excessive storage
+        if (exerciseHistory[exerciseName].history.length > 10) {
+            exerciseHistory[exerciseName].history = exerciseHistory[exerciseName].history.slice(0, 10);
+        }
+
+        // Save updated history
+        localStorage.setItem('exerciseHistory', JSON.stringify(exerciseHistory));
+        console.log(`Stored history for ${exerciseName}`);
         return true;
     } catch (error) {
         console.error('Error storing exercise history:', error);
@@ -31,29 +48,18 @@ async function storeExerciseHistory(exerciseName, muscleGroup, sets) {
     }
 }
 
-// Get last used values for an exercise - Updated to use Supabase
-async function getLastExerciseData(exerciseName) {
+// Get last used values for an exercise
+function getLastExerciseData(exerciseName) {
     try {
-        if (!currentUser) {
-            console.log('No user logged in, cannot get exercise history');
-            return null;
-        }
+        const exerciseHistory = JSON.parse(localStorage.getItem('exerciseHistory')) || {};
 
-        // Get recent workouts for this user and exercise
-        const workouts = await db.getWorkouts(currentUser.id);
+        // Check if we have history for this exercise
+        if (exerciseHistory[exerciseName] &&
+            exerciseHistory[exerciseName].history &&
+            exerciseHistory[exerciseName].history.length > 0) {
 
-        // Filter for this specific exercise and sort by date
-        const exerciseWorkouts = workouts
-            .filter(workout => workout.exercise_name === exerciseName)
-            .sort((a, b) => new Date(b.workout_date) - new Date(a.workout_date));
-
-        if (exerciseWorkouts.length > 0) {
-            // Return the most recent entry
-            const mostRecent = exerciseWorkouts[0];
-            return {
-                date: mostRecent.workout_date,
-                sets: mostRecent.sets
-            };
+            // Return the most recent entry (first in the array)
+            return exerciseHistory[exerciseName].history[0];
         }
 
         return null;
@@ -66,84 +72,26 @@ async function getLastExerciseData(exerciseName) {
 // Check if user is logged in and initialize
 document.addEventListener('DOMContentLoaded', async () => {
     try {
-        console.log('🏋️ Workout Logger: Starting authentication check...');
+        console.log('Workout Logger: Starting authentication check...');
 
         // Add a small delay to ensure Supabase is fully initialized
-        await new Promise(resolve => setTimeout(resolve, 200));
+        await new Promise(resolve => setTimeout(resolve, 100));
 
-        // Try multiple times to get user (sometimes takes a moment)
-        let attempts = 0;
-        const maxAttempts = 3;
-
-        while (attempts < maxAttempts && !currentUser) {
-            console.log(`🔍 Workout Logger: Authentication attempt ${attempts + 1}/${maxAttempts}`);
-            currentUser = await auth.getCurrentUser();
-
-            if (!currentUser && attempts < maxAttempts - 1) {
-                await new Promise(resolve => setTimeout(resolve, 500));
-            }
-            attempts++;
-        }
-
-        console.log('🏋️ Workout Logger: Final auth result:', currentUser ? 'SUCCESS' : 'FAILED');
+        currentUser = await auth.getCurrentUser();
+        console.log('Workout Logger: Current user:', currentUser);
 
         if (!currentUser) {
-            console.log('❌ Workout Logger: No user found after multiple attempts');
-
-            // More user-friendly approach - show message and redirect after delay
-            const redirectMessage = document.createElement('div');
-            redirectMessage.innerHTML = `
-                <div style="
-                    position: fixed; 
-                    top: 50%; 
-                    left: 50%; 
-                    transform: translate(-50%, -50%);
-                    background: white;
-                    padding: 20px;
-                    border-radius: 8px;
-                    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-                    text-align: center;
-                    z-index: 10000;
-                ">
-                    <h3>🔐 Authentication Required</h3>
-                    <p>Please log in to access the Workout Logger</p>
-                    <p>Redirecting to login page in <span id="countdown">3</span> seconds...</p>
-                    <button onclick="window.location.href='index.html'" style="
-                        background: #007bff;
-                        color: white;
-                        border: none;
-                        padding: 8px 16px;
-                        border-radius: 4px;
-                        cursor: pointer;
-                        margin-top: 10px;
-                    ">Go to Login Now</button>
-                </div>
-            `;
-            document.body.appendChild(redirectMessage);
-
-            // Countdown timer
-            let countdown = 3;
-            const timer = setInterval(() => {
-                countdown--;
-                const countdownEl = document.getElementById('countdown');
-                if (countdownEl) countdownEl.textContent = countdown;
-
-                if (countdown <= 0) {
-                    clearInterval(timer);
-                    window.location.href = 'index.html';
-                }
-            }, 1000);
-
+            console.log('Workout Logger: No user found, redirecting to login');
+            alert('Please log in to access the Workout Logger');
+            window.location.href = 'index.html';
             return;
         }
 
-        console.log('✅ Workout Logger: User authenticated successfully!');
-        console.log('📧 Email:', currentUser.email);
-        console.log('🆔 User ID:', currentUser.id);
+        console.log('Workout Logger: User authenticated, proceeding...');
 
         // Get user profile for preferences
         const userProfile = await db.getUserProfile(currentUser.id);
-        console.log('👤 Workout Logger: User profile:', userProfile);
+        console.log('Workout Logger: User profile:', userProfile);
 
         // Update UI with user info
         const userName = document.getElementById('user-name');
@@ -164,62 +112,24 @@ document.addEventListener('DOMContentLoaded', async () => {
         const logoutBtn = document.getElementById('logoutBtn');
         if (logoutBtn) {
             logoutBtn.addEventListener('click', async () => {
-                console.log('🚪 Logging out...');
                 await auth.signOut();
                 window.location.href = 'index.html';
             });
         }
 
-        console.log('🏃 Workout Logger: Initializing workout logger...');
+        console.log('Workout Logger: Initializing workout logger...');
         // Continue with workout logger initialization
         initWorkoutLogger();
 
         // Load existing workouts
         await loadWorkouts();
 
-        console.log('🎉 Workout Logger: Initialization complete!');
+        console.log('Workout Logger: Initialization complete');
     } catch (error) {
-        console.error('❌ Error initializing workout logger:', error);
-
-        // Show error message
-        const errorMessage = document.createElement('div');
-        errorMessage.innerHTML = `
-            <div style="
-                position: fixed; 
-                top: 50%; 
-                left: 50%; 
-                transform: translate(-50%, -50%);
-                background: #fee;
-                padding: 20px;
-                border-radius: 8px;
-                border: 1px solid #f66;
-                text-align: center;
-                z-index: 10000;
-            ">
-                <h3>⚠️ Error Loading Workout Logger</h3>
-                <p>There was an error connecting to the server.</p>
-                <p><strong>Error:</strong> ${error.message}</p>
-                <button onclick="window.location.reload()" style="
-                    background: #007bff;
-                    color: white;
-                    border: none;
-                    padding: 8px 16px;
-                    border-radius: 4px;
-                    cursor: pointer;
-                    margin: 5px;
-                ">Refresh Page</button>
-                <button onclick="window.location.href='index.html'" style="
-                    background: #6c757d;
-                    color: white;
-                    border: none;
-                    padding: 8px 16px;
-                    border-radius: 4px;
-                    cursor: pointer;
-                    margin: 5px;
-                ">Go Home</button>
-            </div>
-        `;
-        document.body.appendChild(errorMessage);
+        console.error('Error initializing workout logger:', error);
+        alert('Error loading workout logger. Please try refreshing the page.');
+        // Don't redirect immediately, give user a chance to refresh
+        // window.location.href = 'index.html';
     }
 });
 
@@ -529,12 +439,12 @@ function addExerciseFromPopular(exercise) {
 // Format date for date input field (YYYY-MM-DD)
 function formatDateForInput(date) {
     const year = date.getFullYear();
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const day = date.getDate().toString().padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
 }
 
-// Load workouts from Supabase - Global function
+// Load workouts function - moved to global scope
 async function loadWorkouts() {
     try {
         if (!currentUser) {
@@ -544,6 +454,11 @@ async function loadWorkouts() {
 
         const workouts = await db.getWorkouts(currentUser.id);
         const wkList = getWorkoutList();
+
+        if (!wkList) {
+            console.log('Workout list element not found, skipping workout load');
+            return false;
+        }
 
         // Clear existing entries
         wkList.innerHTML = '';
@@ -597,7 +512,6 @@ async function loadWorkouts() {
     }
 }
 
-// Initialize the workout logger
 function initWorkoutLogger() {
     console.log('Initializing workout logger...');
 
@@ -1423,7 +1337,8 @@ function initWorkoutLogger() {
                 return false;
             }
 
-            // Exercise history is now stored directly in Supabase via saveWorkout
+            // Store exercise history for future auto-fill (keep local for quick access)
+            storeExerciseHistory(exercise.exercise, exercise.muscleGroup, sets);
 
             // Mark exercise as completed
             if (!window.completedExercises) {
@@ -1596,34 +1511,6 @@ function initWorkoutLogger() {
         }
     }
 
-    // Weight unit change handler - update all exercise inputs
-    weightUnitSelect.addEventListener('change', async () => {
-        const weightUnit = weightUnitSelect.value;
-        const step = weightUnit === 'kg' ? 1 : 2.5;
-
-        // Save preference to Supabase instead of localStorage
-        if (currentUser) {
-            try {
-                await db.updateUserProfile(currentUser.id, { preferred_weight_unit: weightUnit });
-                console.log('Weight unit preference saved to Supabase');
-            } catch (error) {
-                console.error('Error saving weight unit preference:', error);
-            }
-        }
-
-        // Update all weight labels
-        document.querySelectorAll('.set-input-field label').forEach(label => {
-            if (label.textContent.includes('Weight')) {
-                label.textContent = `Weight (${weightUnit})`;
-            }
-        });
-
-        // Update all weight inputs
-        document.querySelectorAll('input[name="weight"]').forEach(input => {
-            input.step = step;
-        });
-    });
-
     // Custom Exercise Addition
     const addCustomExerciseBtn = document.getElementById('addCustomExerciseBtn');
     if (addCustomExerciseBtn) {
@@ -1717,6 +1604,27 @@ function initWorkoutLogger() {
         const dateText = entry.querySelector('.workout-date').textContent;
         return new Date(dateText.split(' at ')[0]);
     }
+
+    // Weight unit change handler - update all exercise inputs
+    weightUnitSelect.addEventListener('change', () => {
+        const weightUnit = weightUnitSelect.value;
+        const step = weightUnit === 'kg' ? 1 : 2.5;
+
+        // Save preference
+        localStorage.setItem('preferredWeightUnit', weightUnit);
+
+        // Update all weight labels
+        document.querySelectorAll('.set-input-field label').forEach(label => {
+            if (label.textContent.includes('Weight')) {
+                label.textContent = `Weight (${weightUnit})`;
+            }
+        });
+
+        // Update all weight inputs
+        document.querySelectorAll('input[name="weight"]').forEach(input => {
+            input.step = step;
+        });
+    });
 
     // Add Save Workout button handler
     document.getElementById('saveWorkoutBtn').addEventListener('click', () => {

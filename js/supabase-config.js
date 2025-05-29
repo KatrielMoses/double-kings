@@ -3,15 +3,7 @@ const supabaseUrl = 'https://xpfnxpbshviqqukjrrub.supabase.co' // https://xxxxx.
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhwZm54cGJzaHZpcXF1a2pycnViIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwODI4OTUsImV4cCI6MjA2MzY1ODg5NX0.ptRfVP5hjrV6o5bKZ7HFeIY7jKPzxw6S0SlubYliHiQ' // eyJhbGc...
 
 // Create Supabase client (using global supabase from CDN)
-export const supabase = window.supabase.createClient(supabaseUrl, supabaseKey, {
-    auth: {
-        autoRefreshToken: true,
-        persistSession: true,
-        detectSessionInUrl: true,
-        storage: window.localStorage,
-        storageKey: 'double-kings-auth'
-    }
-})
+export const supabase = window.supabase.createClient(supabaseUrl, supabaseKey)
 
 // Auth helper functions
 export const auth = {
@@ -324,37 +316,6 @@ export const db = {
     },
 
     // Template functions
-    async saveWorkoutTemplate(templateData) {
-        try {
-            const { data, error } = await supabase
-                .from('workout_templates')
-                .insert([templateData])
-                .select()
-
-            if (error) throw error
-            return { success: true, data }
-        } catch (error) {
-            console.error('Save workout template error:', error)
-            return { success: false, error: error.message }
-        }
-    },
-
-    async getWorkoutTemplates(userId) {
-        try {
-            const { data, error } = await supabase
-                .from('workout_templates')
-                .select('*')
-                .eq('user_id', userId)
-                .order('created_at', { ascending: false })
-
-            if (error) throw error
-            return data || []
-        } catch (error) {
-            console.error('Get workout templates error:', error)
-            return []
-        }
-    },
-
     async saveTemplate(templateData) {
         try {
             const { data, error } = await supabase
