@@ -422,101 +422,28 @@ function initializeProgressMonitoring(userProfile) {
     // Create or update the chart
     function createChart(chartData) {
         const ctx = document.getElementById('progressChart').getContext('2d');
-        const workoutData = chartData.workoutData;
-        const goalData = chartData.goalData;
 
-        const exercises = Object.keys(workoutData);
-        const colors = generateChartColors(exercises.length);
-        const isAllCompounds = viewTypeSelect.value === 'compound' && compoundExerciseSelect.value === 'all';
+        // Handle the data structure returned by prepareChartData
+        const datasets = chartData.datasets || [];
 
-        // Create datasets for actual workout data
-        const workoutDatasets = exercises.map((exercise, index) => ({
-            label: exercise,
-            data: workoutData[exercise],
-            borderColor: colors[index],
-            backgroundColor: colors[index] + '33', // Add transparency
-            pointBackgroundColor: colors[index],
-            pointRadius: isAllCompounds ? 4 : 5, // Smaller points for multiple compounds
-            pointHoverRadius: isAllCompounds ? 6 : 7,
-            fill: false,
-            tension: 0.2,
-            showLine: true, // Connect points with lines
-            borderWidth: isAllCompounds ? 2 : 3, // Thinner lines for multiple compounds
-            order: 1 // Ensure actual workout data is drawn first
-        }));
-
-        // Create goal datasets - one for each exercise with goals
-        const goalDatasets = [];
-
-        exercises.forEach((exercise, index) => {
-            if (goalData[exercise] && goalData[exercise].length > 0) {
-                // Sort goals by deadline
-                const exerciseGoals = goalData[exercise].sort((a, b) => a.deadline - b.deadline);
-
-                // For each goal, create a dataset
-                exerciseGoals.forEach((goal, goalIndex) => {
-                    // Get last workout data point for the exercise (most recent 1RM)
-                    const latestWorkout = workoutData[exercise][workoutData[exercise].length - 1];
-
-                    if (!latestWorkout) return; // Skip if no workout data
-
-                    // Create dataset for the projected goal line
-                    const goalLineData = [
-                        // Start from the latest workout point
-                        {
-                            x: latestWorkout.x,
-                            y: latestWorkout.y,
-                            isGoal: false,
-                            exerciseName: exercise
-                        },
-                        // End at the goal deadline with target 1RM
-                        {
-                            x: goal.deadline,
-                            y: goal.target1RM,
-                            isGoal: true,
-                            reps: goal.targetReps,
-                            weight: goal.targetWeight,
-                            exerciseName: exercise,
-                            weeks: goal.weeks
-                        }
-                    ];
-
-                    // Add to goal datasets
-                    goalDatasets.push({
-                        label: `${exercise} Goal (${goal.weeks} weeks)`,
-                        data: goalLineData,
-                        borderColor: colors[index],
-                        backgroundColor: 'transparent',
-                        borderDash: [6, 6], // Dotted line
-                        borderWidth: 2,
-                        pointRadius: [0, 6], // Only show point at goal
-                        pointBackgroundColor: colors[index],
-                        pointBorderColor: '#ffffff',
-                        pointBorderWidth: 2,
-                        pointHoverRadius: 8,
-                        fill: false,
-                        tension: 0,
-                        showLine: true,
-                        order: 2, // Draw goal lines on top
-                        hidden: false // Make goal visible by default
-                    });
-                });
-            }
-        });
-
-        // Combine all datasets
-        const allDatasets = [...workoutDatasets, ...goalDatasets];
+        if (datasets.length === 0) {
+            console.warn('No datasets provided to createChart');
+            return;
+        }
 
         // Destroy previous chart if it exists
         if (progressChart) {
             progressChart.destroy();
         }
 
+        // Determine if showing all compounds for styling
+        const isAllCompounds = viewTypeSelect.value === 'compound' && compoundExerciseSelect.value === 'all';
+
         // Create new chart
         progressChart = new Chart(ctx, {
             type: 'scatter',
             data: {
-                datasets: allDatasets
+                datasets: datasets
             },
             options: {
                 responsive: true,
@@ -575,7 +502,7 @@ function initializeProgressMonitoring(userProfile) {
 
                                 // Handle regular workout data points
                                 const date = new Date(point.x).toLocaleDateString();
-                                return `${context.dataset.label}: 1RM = ${point.oneRepMax} ${weightUnitSelect.value} (${point.weight.toFixed(1)} × ${point.reps} reps) (${date})`;
+                                return `${context.dataset.label}: 1RM = ${point.oneRepMax || point.y} ${weightUnitSelect.value} (${point.weight?.toFixed(1) || 'N/A'} × ${point.reps || 'N/A'} reps) (${date})`;
                             }
                         }
                     },
@@ -594,7 +521,7 @@ function initializeProgressMonitoring(userProfile) {
                             }
                         },
                         // Position legend at bottom for multiple compounds to save space
-                        position: isAllCompounds && exercises.length > 3 ? 'bottom' : 'top'
+                        position: isAllCompounds && datasets.length > 3 ? 'bottom' : 'top'
                     }
                 },
                 // Improve interaction when showing multiple compounds
