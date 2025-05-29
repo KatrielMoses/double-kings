@@ -6,6 +6,28 @@
             "use": "@vercel/static"
         }
     ],
+    "routes": [
+        {
+            "src": "/workout-logger.html",
+            "dest": "/workout-logger.html"
+        },
+        {
+            "src": "/progress-monitoring.html",
+            "dest": "/progress-monitoring.html"
+        },
+        {
+            "src": "/goal-setting.html",
+            "dest": "/goal-setting.html"
+        },
+        {
+            "src": "/my-templates.html",
+            "dest": "/my-templates.html"
+        },
+        {
+            "src": "/",
+            "dest": "/index.html"
+        }
+    ],
     "headers": [
         {
             "source": "/(.*)",
@@ -21,14 +43,21 @@
                 {
                     "key": "X-XSS-Protection",
                     "value": "1; mode=block"
+                },
+                {
+                    "key": "Cache-Control",
+                    "value": "public, max-age=0, must-revalidate"
                 }
             ]
-        }
-    ],
-    "rewrites": [
+        },
         {
-            "source": "/(.*)",
-            "destination": "/$1"
+            "source": "/js/(.*)",
+            "headers": [
+                {
+                    "key": "Cache-Control",
+                    "value": "public, max-age=31536000, immutable"
+                }
+            ]
         }
     ]
 }

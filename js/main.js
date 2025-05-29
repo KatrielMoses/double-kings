@@ -14,17 +14,19 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function checkAuthStatus() {
     try {
+        console.log('🔍 Checking authentication status...');
         currentUser = await auth.getCurrentUser();
 
         if (currentUser) {
-            console.log('User authenticated:', currentUser.email);
+            console.log('✅ User authenticated:', currentUser.email);
+            console.log('User ID:', currentUser.id);
             updateUIForAuthenticatedUser();
         } else {
-            console.log('No user authenticated');
+            console.log('❌ No user authenticated');
             updateUIForUnauthenticatedUser();
         }
     } catch (error) {
-        console.error('Error checking auth status:', error);
+        console.error('❌ Error checking auth status:', error);
         updateUIForUnauthenticatedUser();
     }
 }
@@ -185,21 +187,30 @@ async function handleLogin(e) {
     const email = document.getElementById('loginEmail').value;
     const password = document.getElementById('loginPassword').value;
 
+    console.log('🔐 Attempting login for:', email);
+
     try {
-        const result = await auth.signInWithPassword(email, password);
+        const result = await auth.signIn(email, password);
 
         if (result.success) {
-            currentUser = result.user;
-            console.log('Login successful:', currentUser.email);
+            currentUser = result.data.user;
+            console.log('✅ Login successful:', currentUser.email);
+            console.log('User data:', currentUser);
+
+            // Create/update user profile in database
+            const profile = await db.getUserProfile(currentUser.id);
+            console.log('User profile:', profile);
+
             updateUIForAuthenticatedUser();
             closeModal('loginModal');
             showNotification('Welcome back!', 'success');
         } else {
+            console.error('❌ Login failed:', result.error);
             showNotification(result.error || 'Login failed', 'error');
         }
     } catch (error) {
-        console.error('Login error:', error);
-        showNotification('Login failed. Please try again.', 'error');
+        console.error('❌ Login error:', error);
+        showNotification('An error occurred during login', 'error');
     }
 }
 

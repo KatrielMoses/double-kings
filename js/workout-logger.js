@@ -66,26 +66,84 @@ async function getLastExerciseData(exerciseName) {
 // Check if user is logged in and initialize
 document.addEventListener('DOMContentLoaded', async () => {
     try {
-        console.log('Workout Logger: Starting authentication check...');
+        console.log('🏋️ Workout Logger: Starting authentication check...');
 
         // Add a small delay to ensure Supabase is fully initialized
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise(resolve => setTimeout(resolve, 200));
 
-        currentUser = await auth.getCurrentUser();
-        console.log('Workout Logger: Current user:', currentUser);
+        // Try multiple times to get user (sometimes takes a moment)
+        let attempts = 0;
+        const maxAttempts = 3;
+
+        while (attempts < maxAttempts && !currentUser) {
+            console.log(`🔍 Workout Logger: Authentication attempt ${attempts + 1}/${maxAttempts}`);
+            currentUser = await auth.getCurrentUser();
+
+            if (!currentUser && attempts < maxAttempts - 1) {
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+            attempts++;
+        }
+
+        console.log('🏋️ Workout Logger: Final auth result:', currentUser ? 'SUCCESS' : 'FAILED');
 
         if (!currentUser) {
-            console.log('Workout Logger: No user found, redirecting to login');
-            alert('Please log in to access the Workout Logger');
-            window.location.href = 'index.html';
+            console.log('❌ Workout Logger: No user found after multiple attempts');
+
+            // More user-friendly approach - show message and redirect after delay
+            const redirectMessage = document.createElement('div');
+            redirectMessage.innerHTML = `
+                <div style="
+                    position: fixed; 
+                    top: 50%; 
+                    left: 50%; 
+                    transform: translate(-50%, -50%);
+                    background: white;
+                    padding: 20px;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                    text-align: center;
+                    z-index: 10000;
+                ">
+                    <h3>🔐 Authentication Required</h3>
+                    <p>Please log in to access the Workout Logger</p>
+                    <p>Redirecting to login page in <span id="countdown">3</span> seconds...</p>
+                    <button onclick="window.location.href='index.html'" style="
+                        background: #007bff;
+                        color: white;
+                        border: none;
+                        padding: 8px 16px;
+                        border-radius: 4px;
+                        cursor: pointer;
+                        margin-top: 10px;
+                    ">Go to Login Now</button>
+                </div>
+            `;
+            document.body.appendChild(redirectMessage);
+
+            // Countdown timer
+            let countdown = 3;
+            const timer = setInterval(() => {
+                countdown--;
+                const countdownEl = document.getElementById('countdown');
+                if (countdownEl) countdownEl.textContent = countdown;
+
+                if (countdown <= 0) {
+                    clearInterval(timer);
+                    window.location.href = 'index.html';
+                }
+            }, 1000);
+
             return;
         }
 
-        console.log('Workout Logger: User authenticated, proceeding...');
+        console.log('✅ Workout Logger: User authenticated successfully!');
+        console.log('📧 Email:', currentUser.email);
+        console.log('🆔 User ID:', currentUser.id);
 
         // Get user profile for preferences
         const userProfile = await db.getUserProfile(currentUser.id);
-        console.log('Workout Logger: User profile:', userProfile);
+        console.log('👤 Workout Logger: User profile:', userProfile);
 
         // Update UI with user info
         const userName = document.getElementById('user-name');
@@ -106,24 +164,62 @@ document.addEventListener('DOMContentLoaded', async () => {
         const logoutBtn = document.getElementById('logoutBtn');
         if (logoutBtn) {
             logoutBtn.addEventListener('click', async () => {
+                console.log('🚪 Logging out...');
                 await auth.signOut();
                 window.location.href = 'index.html';
             });
         }
 
-        console.log('Workout Logger: Initializing workout logger...');
+        console.log('🏃 Workout Logger: Initializing workout logger...');
         // Continue with workout logger initialization
         initWorkoutLogger();
 
         // Load existing workouts
         await loadWorkouts();
 
-        console.log('Workout Logger: Initialization complete');
+        console.log('🎉 Workout Logger: Initialization complete!');
     } catch (error) {
-        console.error('Error initializing workout logger:', error);
-        alert('Error loading workout logger. Please try refreshing the page.');
-        // Don't redirect immediately, give user a chance to refresh
-        // window.location.href = 'index.html';
+        console.error('❌ Error initializing workout logger:', error);
+
+        // Show error message
+        const errorMessage = document.createElement('div');
+        errorMessage.innerHTML = `
+            <div style="
+                position: fixed; 
+                top: 50%; 
+                left: 50%; 
+                transform: translate(-50%, -50%);
+                background: #fee;
+                padding: 20px;
+                border-radius: 8px;
+                border: 1px solid #f66;
+                text-align: center;
+                z-index: 10000;
+            ">
+                <h3>⚠️ Error Loading Workout Logger</h3>
+                <p>There was an error connecting to the server.</p>
+                <p><strong>Error:</strong> ${error.message}</p>
+                <button onclick="window.location.reload()" style="
+                    background: #007bff;
+                    color: white;
+                    border: none;
+                    padding: 8px 16px;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    margin: 5px;
+                ">Refresh Page</button>
+                <button onclick="window.location.href='index.html'" style="
+                    background: #6c757d;
+                    color: white;
+                    border: none;
+                    padding: 8px 16px;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    margin: 5px;
+                ">Go Home</button>
+            </div>
+        `;
+        document.body.appendChild(errorMessage);
     }
 });
 
