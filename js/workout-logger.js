@@ -397,12 +397,14 @@ function addExerciseFromPopular(exercise) {
         return;
     }
 
-    // Create new exercise object
+    // Create new exercise object with unique ID
     const newExercise = {
+        id: 'ex_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
         muscleGroup: exercise.muscleGroup,
         exercise: exercise.name,
         defaultSets: exercise.sets,
-        defaultReps: exercise.reps
+        defaultReps: exercise.reps,
+        isLogged: false
     };
 
     // Add to template
@@ -519,6 +521,11 @@ function initWorkoutLogger() {
     const weightUnitSelect = document.getElementById('weightUnit');
     const workoutDateInput = document.getElementById('workoutDate');
 
+    // Initialize logged exercises tracking - separate from template
+    if (!window.loggedExercises) {
+        window.loggedExercises = new Map(); // Use Map to store logged exercises by unique ID
+    }
+
     // Set default date to today
     const today = new Date();
     const formattedToday = formatDateForInput(today);
@@ -547,17 +554,24 @@ function initWorkoutLogger() {
         console.error('Add exercise button not found!');
     }
 
+    // Function to generate unique exercise ID
+    function generateExerciseId() {
+        return 'ex_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    }
+
     // Function to add a new empty exercise row
     function addNewEmptyExercise() {
         console.log('Adding new empty exercise...');
 
-        // Create a placeholder exercise object
+        // Create a placeholder exercise object with unique ID
         const newExercise = {
+            id: generateExerciseId(),
             muscleGroup: '',
             exercise: '',
             defaultSets: 3,
             defaultReps: '8-12',
-            isNew: true // Flag to indicate this is a new, editable exercise
+            isNew: true, // Flag to indicate this is a new, editable exercise
+            isLogged: false // Track if this exercise has been logged
         };
 
         // Add to template
@@ -1051,6 +1065,17 @@ function initWorkoutLogger() {
         window.currentTemplate = template;
         window.completedExercises = new Set();
 
+        // Ensure all exercises have unique IDs
+        template.exercises.forEach(exercise => {
+            if (!exercise.id) {
+                exercise.id = generateExerciseId();
+            }
+            // Initialize isLogged flag if not present
+            if (exercise.isLogged === undefined) {
+                exercise.isLogged = false;
+            }
+        });
+
         // Create list items for each exercise
         template.exercises.forEach((exercise, index) => {
             createExerciseItem(exercise, index);
@@ -1064,8 +1089,23 @@ function initWorkoutLogger() {
     function createExerciseItem(exercise, index) {
         const exerciseList = document.getElementById('exerciseList');
         const listItem = document.createElement('li');
+
+        // Ensure exercise has an ID
+        if (!exercise.id) {
+            exercise.id = generateExerciseId();
+        }
+
+        // Check if this exercise has been logged
+        const isLogged = exercise.isLogged || window.loggedExercises.has(exercise.id);
+
         listItem.className = 'exercise-item';
+        if (isLogged) {
+            listItem.classList.add('completed');
+            listItem.dataset.logged = 'true';
+        }
+
         listItem.dataset.index = index;
+        listItem.dataset.exerciseId = exercise.id;
         listItem.draggable = true;
 
         // Create the base structure without toggle button
@@ -1078,7 +1118,7 @@ function initWorkoutLogger() {
             <div class="exercise-controls">
                 <div class="exercise-status">
                     <span class="status-icon">
-                        <i class="fas fa-circle"></i>
+                        <i class="fas ${isLogged ? 'fa-check' : 'fa-circle'}"></i>
                     </span>
                 </div>
             </div>
@@ -1103,67 +1143,99 @@ function initWorkoutLogger() {
                 <div class="sets-container">
                     <!-- Sets will be generated here -->
                 </div>
-                <button class="log-sets-btn">
-                    <i class="fas fa-check"></i> Log Exercise
+                <button class="log-sets-btn" ${isLogged ? 'disabled' : ''}>
+                    <i class="fas ${isLogged ? 'fa-check-circle' : 'fa-check'}"></i> ${isLogged ? 'Already Logged' : 'Log Exercise'}
                 </button>
             </div>
         `;
 
+        // Set the correct status icon styling if logged
+        if (isLogged) {
+            const statusIcon = listItem.querySelector('.status-icon');
+            statusIcon.style.background = 'var(--accent-color)';
+            statusIcon.style.color = 'white';
+
+            // Add completed exercises to the set for consistency
+            if (!window.completedExercises) {
+                window.completedExercises = new Set();
+            }
+            window.completedExercises.add(exercise.id);
+        }
+
         // Generate initial sets with auto-filled data from history
         const setsContainer = listItem.querySelector('.sets-container');
-        generateSets(setsContainer, exercise.defaultSets, exercise.exercise);
 
-        // Add click event to toggle exercise logging when clicking on the exercise
-        listItem.querySelector('.exercise-header').addEventListener('click', (e) => {
-            // Don't toggle if clicking on action buttons
-            if (e.target.closest('.exercise-actions')) return;
+        // If exercise is logged, populate with saved data
+        if (isLogged && window.loggedExercises.has(exercise.id)) {
+            const loggedData = window.loggedExercises.get(exercise.id);
+            generateSetsFromLoggedData(setsContainer, loggedData);
+        } else {
+            generateSets(setsContainer, exercise.defaultSets, exercise.exercise);
+        }
 
-            // Toggle expanded class
-            listItem.classList.toggle('expanded');
-        });
+        // Add click event to toggle exercise logging when clicking on the exercise (only if not logged)
+        if (!isLogged) {
+            listItem.querySelector('.exercise-header').addEventListener('click', (e) => {
+                // Don't toggle if clicking on action buttons
+                if (e.target.closest('.exercise-actions')) return;
 
-        // Increase/decrease sets handlers
+                // Toggle expanded class
+                listItem.classList.toggle('expanded');
+            });
+        }
+
+        // Increase/decrease sets handlers (disable if logged)
         const increaseBtn = listItem.querySelector('.increase-sets');
         const decreaseBtn = listItem.querySelector('.decrease-sets');
         const setsTitle = listItem.querySelector('.sets-title');
         let currentSets = exercise.defaultSets;
 
-        increaseBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            if (currentSets < 10) {
-                currentSets++;
-                setsTitle.textContent = `Sets (${currentSets})`;
-                generateSets(setsContainer, currentSets, exercise.exercise);
-            }
-        });
+        if (!isLogged) {
+            increaseBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (currentSets < 10) {
+                    currentSets++;
+                    setsTitle.textContent = `Sets (${currentSets})`;
+                    generateSets(setsContainer, currentSets, exercise.exercise);
+                }
+            });
 
-        decreaseBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            if (currentSets > 1) {
-                currentSets--;
-                setsTitle.textContent = `Sets (${currentSets})`;
-                generateSets(setsContainer, currentSets, exercise.exercise);
-            }
-        });
+            decreaseBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (currentSets > 1) {
+                    currentSets--;
+                    setsTitle.textContent = `Sets (${currentSets})`;
+                    generateSets(setsContainer, currentSets, exercise.exercise);
+                }
+            });
+        } else {
+            // Disable controls for logged exercises
+            increaseBtn.disabled = true;
+            decreaseBtn.disabled = true;
+            increaseBtn.style.opacity = '0.5';
+            decreaseBtn.style.opacity = '0.5';
+        }
 
-        // Log sets button handler
+        // Log sets button handler (only if not logged)
         const logSetsBtn = listItem.querySelector('.log-sets-btn');
-        logSetsBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            console.log('Log button clicked for exercise index:', index);
+        if (!isLogged) {
+            logSetsBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                console.log('Log button clicked for exercise index:', index);
 
-            // Make sure all required fields are filled
-            const allInputsFilled = Array.from(listItem.querySelectorAll('input[name="reps"], input[name="weight"]'))
-                .every(input => input.value.trim() !== '');
+                // Make sure all required fields are filled
+                const allInputsFilled = Array.from(listItem.querySelectorAll('input[name="reps"], input[name="weight"]'))
+                    .every(input => input.value.trim() !== '');
 
-            if (!allInputsFilled) {
-                alert('Please fill in all set values');
-                return;
-            }
+                if (!allInputsFilled) {
+                    alert('Please fill in all set values');
+                    return;
+                }
 
-            // Call the log exercise function
-            logExercise(listItem, index);
-        });
+                // Call the log exercise function
+                logExercise(listItem, index);
+            });
+        }
 
         // Add delete button functionality
         const deleteBtn = listItem.querySelector('.delete-exercise');
@@ -1178,6 +1250,39 @@ function initWorkoutLogger() {
 
         exerciseList.appendChild(listItem);
         return listItem;
+    }
+
+    // Function to generate sets from logged data (read-only view)
+    function generateSetsFromLoggedData(container, loggedData) {
+        container.innerHTML = '';
+        const weightUnit = loggedData.weightUnit;
+
+        // Add info about when it was logged
+        const loggedInfo = document.createElement('div');
+        loggedInfo.className = 'history-info';
+        loggedInfo.innerHTML = `
+            <i class="fas fa-check-circle"></i> Logged on ${new Date(loggedData.timestamp).toLocaleDateString()}
+        `;
+        container.appendChild(loggedInfo);
+
+        loggedData.sets.forEach((set, i) => {
+            const setDiv = document.createElement('div');
+            setDiv.className = 'set-input auto-filled';
+
+            setDiv.innerHTML = `
+                <div class="set-number">${i + 1}</div>
+                <div class="set-input-field">
+                    <label>Reps</label>
+                    <input type="number" value="${set.reps}" readonly>
+                </div>
+                <div class="set-input-field">
+                    <label>Weight (${weightUnit})</label>
+                    <input type="number" value="${set.weight}" readonly>
+                </div>
+            `;
+
+            container.appendChild(setDiv);
+        });
     }
 
     // Generate sets for an exercise
@@ -1340,14 +1445,37 @@ function initWorkoutLogger() {
             // Store exercise history for future auto-fill (keep local for quick access)
             storeExerciseHistory(exercise.exercise, exercise.muscleGroup, sets);
 
-            // Mark exercise as completed
+            // Mark exercise as logged permanently using unique ID
+            const exerciseId = exercise.id || generateExerciseId();
+            if (!exercise.id) {
+                // Add ID to exercise if it doesn't have one
+                window.currentTemplate.exercises[index].id = exerciseId;
+            }
+
+            // Store logged exercise data permanently
+            window.loggedExercises.set(exerciseId, {
+                exercise: exercise.exercise,
+                muscleGroup: exercise.muscleGroup,
+                sets: sets,
+                weightUnit: weightUnit,
+                date: workoutDate,
+                timestamp: new Date().toISOString(),
+                isLogged: true
+            });
+
+            // Mark exercise as completed in template
+            window.currentTemplate.exercises[index].isLogged = true;
+
+            // Mark exercise as completed in UI
             if (!window.completedExercises) {
                 window.completedExercises = new Set();
             }
-            window.completedExercises.add(index);
+            window.completedExercises.add(exerciseId); // Use ID instead of index
 
             // Update exercise to completed state
             listItem.classList.add('completed');
+            listItem.dataset.logged = 'true';
+            listItem.dataset.exerciseId = exerciseId;
 
             // Change the circle icon to a green checkmark
             const statusIcon = listItem.querySelector('.status-icon');
@@ -1369,7 +1497,7 @@ function initWorkoutLogger() {
                 notification.remove();
             }, 2000);
 
-            console.log('Exercise logged successfully');
+            console.log('Exercise logged successfully with ID:', exerciseId);
             return true;
         } catch (error) {
             console.error('Error logging exercise:', error);
@@ -1380,22 +1508,28 @@ function initWorkoutLogger() {
 
     // Delete an exercise from the list
     function deleteExercise(index) {
-        if (confirm('Are you sure you want to remove this exercise?')) {
+        const exercise = window.currentTemplate.exercises[index];
+        const isLogged = exercise.isLogged || (exercise.id && window.loggedExercises.has(exercise.id));
+
+        let confirmMessage = 'Are you sure you want to remove this exercise?';
+        if (isLogged) {
+            confirmMessage = `This exercise has already been logged! Removing it from the template won't delete your logged workout data, but you won't see it in this session. Are you sure you want to continue?`;
+        }
+
+        if (confirm(confirmMessage)) {
+            // Note: We don't delete from window.loggedExercises to preserve the user's data
+            // The logged data remains in the database and in the loggedExercises Map
+
             // Remove from template
             window.currentTemplate.exercises.splice(index, 1);
 
-            // Rebuild the exercise list
-            const exerciseList = document.getElementById('exerciseList');
-            exerciseList.innerHTML = '';
-
-            window.currentTemplate.exercises.forEach((exercise, i) => {
-                createExerciseItem(exercise, i);
-            });
+            // Update the template order and rebuild list
+            updateExerciseListAfterChange();
 
             // Add notification
             const notification = document.createElement('div');
             notification.className = 'exercise-complete-notification';
-            notification.innerHTML = '<i class="fas fa-trash"></i> Exercise removed';
+            notification.innerHTML = `<i class="fas fa-trash"></i> Exercise removed${isLogged ? ' (logged data preserved)' : ''}`;
             document.getElementById('exerciseListContainer').appendChild(notification);
 
             // Remove notification after animation
@@ -1403,6 +1537,20 @@ function initWorkoutLogger() {
                 notification.remove();
             }, 2000);
         }
+    }
+
+    // Function to safely update exercise list after changes
+    function updateExerciseListAfterChange() {
+        const exerciseList = document.getElementById('exerciseList');
+        exerciseList.innerHTML = '';
+
+        // Rebuild the exercise list with preserved logged states
+        window.currentTemplate.exercises.forEach((exercise, i) => {
+            createExerciseItem(exercise, i);
+        });
+
+        // Re-enable drag and drop
+        enableDragAndDrop();
     }
 
     // Enable drag and drop functionality
