@@ -118,7 +118,6 @@ function setupEventListeners() {
     const signupBtn = document.querySelector('.signup-btn');
     const closeBtns = document.querySelectorAll('.close');
     const ctaBtn = document.querySelector('.cta-btn');
-    const getStartedBtn = document.getElementById('getStartedBtn');
     const logoutBtn = document.getElementById('logoutBtn');
 
     // Event Listeners
@@ -134,9 +133,8 @@ function setupEventListeners() {
         });
     }
 
-    if (ctaBtn || getStartedBtn) {
-        const startBtn = ctaBtn || getStartedBtn;
-        startBtn.addEventListener('click', () => {
+    if (ctaBtn) {
+        ctaBtn.addEventListener('click', () => {
             if (currentUser) {
                 window.location.href = 'workout-logger.html';
             } else {

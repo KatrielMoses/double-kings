@@ -1,7 +1,8 @@
 /* Progress Monitoring Styles */
 .progress-monitoring {
     min-height: 100vh;
-    padding: 100px 0 60px;
+    padding: 120px 0 60px;
+    background-color: var(--background-color);
 }
 
 .progress-content {

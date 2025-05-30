@@ -8,149 +8,137 @@
     <link rel="icon"
         href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👑</text></svg>">
     <link rel="stylesheet" href="styles/main.css">
-    <link rel="stylesheet" href="styles/background.css">
     <link rel="stylesheet" href="styles/home.css">
     <link rel="stylesheet" href="styles/notifications.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600&display=swap"
         rel="stylesheet">
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 </head>
 
 <body>
-    <!-- Mountain Background -->
-    <div class="mountain-background">
-        <div class="stars"></div>
-        <div class="clouds"></div>
-        <div class="mountains">
-            <div class="mountain-back"></div>
-            <div class="mountain-mid"></div>
-            <div class="mountain-front"></div>
-        </div>
+    <!-- Hero Section with Gym Background -->
+    <div class="hero-background">
+        <div class="hero-overlay"></div>
+
+        <nav class="navbar">
+            <div class="logo">
+                <div class="logo-icon">
+                    <div class="crown-container">
+                        <span class="crown-left"><i class="fas fa-crown"></i></span>
+                        <span class="crown-right"><i class="fas fa-crown"></i></span>
+                    </div>
+                    <span class="logo-text-bottom">Double Kings</span>
+                    <span class="logo-text-sub">FITNESS</span>
+                </div>
+            </div>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link active">Home</a>
+                <a href="workout-logger.html" class="nav-link" id="workout-link">Workout Logger</a>
+                <a href="progress-monitoring.html" class="nav-link" id="progress-link">Progress Monitoring</a>
+                <a href="goal-setting.html" class="nav-link" id="goals-link">Goal Setting</a>
+                <div class="auth-section">
+                    <button class="login-btn" id="loginBtn">Login</button>
+                    <button class="signup-btn" id="signupBtn">Sign Up</button>
+                    <div class="user-profile" id="userProfile" style="display: none;">
+                        <span id="user-name">User</span>
+                        <i class="fas fa-chevron-down"></i>
+                        <div class="user-dropdown">
+                            <a href="workout-logger.html" class="dropdown-item">
+                                <i class="fas fa-dumbbell"></i> Workout Logger
+                            </a>
+                            <a href="progress-monitoring.html" class="dropdown-item">
+                                <i class="fas fa-chart-line"></i> Progress Monitoring
+                            </a>
+                            <a href="goal-setting.html" class="dropdown-item">
+                                <i class="fas fa-bullseye"></i> Goal Setting
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <a href="#" class="dropdown-item" id="logoutBtn">
+                                <i class="fas fa-sign-out-alt"></i> Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <main class="hero">
+            <div class="hero-content">
+                <h1>Train Hard, Track EZ!</h1>
+                <p class="subtitle">Whether you're beginning your fitness journey or an experienced lifter, we want to
+                    help you reach your goals.</p>
+                <button class="cta-btn">LET'S GET STARTED</button>
+            </div>
+        </main>
     </div>
 
-    <nav class="navbar">
-        <div class="logo">
-            <div class="logo-icon">
-                <span class="crown-left"><i class="fas fa-crown"></i></span>
-                <span class="crown-right"><i class="fas fa-crown"></i></span>
-            </div>
-            <span class="logo-text">Double Kings</span>
-        </div>
-        <div class="nav-links">
-            <a href="index.html" class="nav-link active">Home</a>
-            <a href="workout-logger.html" class="nav-link" id="workout-link">Workout Logger</a>
-            <a href="progress-monitoring.html" class="nav-link" id="progress-link">Progress Monitoring</a>
-            <a href="goal-setting.html" class="nav-link" id="goals-link">Goal Setting</a>
-            <div class="auth-section">
-                <button class="login-btn" id="loginBtn">Login</button>
-                <button class="signup-btn" id="signupBtn">Sign Up</button>
-                <div class="user-profile" id="userProfile" style="display: none;">
-                    <span id="user-name">User</span>
-                    <i class="fas fa-chevron-down"></i>
-                    <div class="user-dropdown">
-                        <a href="workout-logger.html" class="dropdown-item">
-                            <i class="fas fa-dumbbell"></i> Workout Logger
-                        </a>
-                        <a href="progress-monitoring.html" class="dropdown-item">
-                            <i class="fas fa-chart-line"></i> Progress Monitoring
-                        </a>
-                        <a href="goal-setting.html" class="dropdown-item">
-                            <i class="fas fa-bullseye"></i> Goal Setting
-                        </a>
-                        <div class="dropdown-divider"></div>
-                        <a href="#" class="dropdown-item" id="logoutBtn">
-                            <i class="fas fa-sign-out-alt"></i> Logout
-                        </a>
+    <!-- Features Section -->
+    <section class="classes-section">
+        <div class="container">
+            <h2 class="section-title">YOUR FITNESS JOURNEY</h2>
+
+            <div class="classes-grid">
+                <!-- Workout Logger Section -->
+                <div class="class-category">
+                    <div class="class-image workout-logger-bg">
+                        <div class="class-overlay">
+                            <h3>WORKOUT LOGGER</h3>
+                            <p>Track your sets, reps, and weights</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Progress Monitoring Section -->
+                <div class="class-category">
+                    <div class="class-image progress-monitoring-bg">
+                        <div class="class-overlay">
+                            <h3>PROGRESS MONITORING</h3>
+                            <p>See your strength gains over time</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Goal Setting Section -->
+                <div class="class-category">
+                    <div class="class-image goal-setting-bg">
+                        <div class="class-overlay">
+                            <h3>GOAL SETTING</h3>
+                            <p>Set and achieve your fitness goals</p>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </nav>
+    </section>
 
-    <main class="hero">
-        <div class="hero-content">
-            <h1>Achieve Your Fitness Goals</h1>
-            <p class="subtitle">Track your workouts, monitor your progress, and reach new heights with Double Kings
-                Fitness.</p>
-            <button class="cta-btn" id="getStartedBtn">Get Started</button>
-        </div>
-
+    <!-- Features Section -->
+    <section class="features-section">
         <div class="container">
             <div class="features">
                 <div class="feature">
                     <div class="feature-icon">
                         <i class="fas fa-dumbbell"></i>
                     </div>
-                    <h3>Workout Tracking</h3>
-                    <p>Record your sets, reps, and weights to keep track of your progress.</p>
+                    <h3>Personal Training</h3>
+                    <p>One-on-one sessions tailored to your specific goals and fitness level.</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h3>Group Classes</h3>
+                    <p>High-energy group workouts that push you to your limits while building community.</p>
                 </div>
                 <div class="feature">
                     <div class="feature-icon">
                         <i class="fas fa-chart-line"></i>
                     </div>
-                    <h3>Progress Monitoring</h3>
-                    <p>See your strength gains over time with our intuitive tracking system.</p>
-                </div>
-                <div class="feature">
-                    <div class="feature-icon">
-                        <i class="fas fa-medal"></i>
-                    </div>
-                    <h3>Goal Setting</h3>
-                    <p>Set and achieve your fitness goals with our structured approach.</p>
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <!-- Templates Section -->
-    <section class="templates-section">
-        <div class="container">
-            <h2 class="section-title">Popular Workout Templates</h2>
-            <p class="section-subtitle">Get started with our pre-made workout templates or create your own</p>
-
-            <div class="templates-grid">
-                <!-- Push/Pull/Legs Template -->
-                <div class="template-card">
-                    <div class="template-icon">
-                        <i class="fas fa-dumbbell"></i>
-                    </div>
-                    <h3>Push/Pull/Legs</h3>
-                    <p>A classic 3-day split focusing on pushing movements, pulling movements, and leg exercises.</p>
-                    <a href="my-templates.html" class="template-btn">View Template</a>
-                </div>
-
-                <!-- Upper/Lower Template -->
-                <div class="template-card">
-                    <div class="template-icon">
-                        <i class="fas fa-running"></i>
-                    </div>
-                    <h3>Upper/Lower Split</h3>
-                    <p>A balanced 4-day split alternating between upper body and lower body workouts.</p>
-                    <a href="my-templates.html" class="template-btn">View Template</a>
-                </div>
-
-                <!-- Full Body Template -->
-                <div class="template-card">
-                    <div class="template-icon">
-                        <i class="fas fa-user"></i>
-                    </div>
-                    <h3>Full Body Workout</h3>
-                    <p>Complete full body workouts perfect for beginners or those with limited time.</p>
-                    <a href="my-templates.html" class="template-btn">View Template</a>
-                </div>
-
-                <!-- Custom Template Card -->
-                <div class="template-card create-template">
-                    <div class="template-icon">
-                        <i class="fas fa-plus-circle"></i>
-                    </div>
-                    <h3>Create Custom Template</h3>
-                    <p>Design your own workout template tailored to your specific goals and preferences.</p>
-                    <a href="my-templates.html" class="template-btn">Create Template</a>
+                    <h3>Progress Tracking</h3>
+                    <p>Monitor your strength gains and celebrate your achievements with our tracking system.</p>
                 </div>
             </div>
         </div>
@@ -182,7 +170,6 @@
 
             <!-- Google Sign-In Button -->
             <div class="google-signin-container">
-                <!-- Single Google Sign-In button for better compatibility -->
                 <button id="custom-google-signin" class="google-btn">
                     <i class="fab fa-google"></i> Sign in with Google
                 </button>
@@ -228,7 +215,6 @@
 
             <!-- Google Sign-In Button -->
             <div class="google-signin-container">
-                <!-- Single Google Sign-In button for better compatibility -->
                 <button id="custom-google-signup" class="google-btn">
                     <i class="fab fa-google"></i> Sign up with Google
                 </button>
@@ -243,10 +229,12 @@
             <div class="footer-content">
                 <div class="footer-logo">
                     <div class="logo-icon">
-                        <span class="crown-left"><i class="fas fa-crown"></i></span>
-                        <span class="crown-right"><i class="fas fa-crown"></i></span>
+                        <div class="crown-container">
+                            <span class="crown-left"><i class="fas fa-crown"></i></span>
+                            <span class="crown-right"><i class="fas fa-crown"></i></span>
+                        </div>
+                        <span class="logo-text-bottom">Double Kings</span>
                     </div>
-                    <span class="logo-text">Double Kings</span>
                 </div>
                 <p>&copy; 2023 Double Kings Fitness. All rights reserved.</p>
             </div>

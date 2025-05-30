@@ -12,7 +12,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         const userProfile = document.getElementById('userProfile');
         const userName = document.getElementById('user-name');
         const logoutBtn = document.getElementById('logoutBtn');
-        const getStartedBtn = document.getElementById('getStartedBtn');
 
         if (currentUser) {
             // User is logged in
@@ -27,22 +26,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (userName && userProfileData?.name) {
                 userName.textContent = userProfileData.name;
             }
-
-            // Update get started button
-            getStartedBtn.textContent = 'Go to Workout Logger';
-            getStartedBtn.onclick = () => {
-                window.location.href = 'workout-logger.html';
-            };
         } else {
             // User is not logged in
             loginBtn.style.display = 'block';
             signupBtn.style.display = 'block';
             userProfile.style.display = 'none';
-
-            // Update get started button
-            getStartedBtn.onclick = () => {
-                document.getElementById('signupModal').style.display = 'block';
-            };
         }
 
         // Modal handlers
