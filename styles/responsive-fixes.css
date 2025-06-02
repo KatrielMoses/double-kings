@@ -1,0 +1,447 @@
+/* Responsive Fixes and Cross-Browser Compatibility */
+
+/* Reset and Base Fixes */
+* {
+    box-sizing: border-box;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+html {
+    font-size: 16px;
+    line-height: 1.15;
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    position: relative;
+    width: 100%;
+    min-height: 100vh;
+    min-height: calc(var(--vh, 1vh) * 100);
+}
+
+/* iOS Safari specific fixes */
+@supports (-webkit-touch-callout: none) {
+    .hero-background {
+        min-height: -webkit-fill-available;
+    }
+}
+
+/* Chrome mobile address bar fix */
+@media screen and (max-width: 768px) {
+    .hero-background {
+        min-height: 100vh;
+        min-height: calc(var(--vh, 1vh) * 100);
+    }
+}
+
+/* Prevent horizontal scrolling */
+.container,
+.hero-content,
+.classes-grid,
+.features,
+.navbar,
+.modal-content {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+/* Image responsive fixes */
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* Button accessibility and touch improvements */
+button,
+.btn,
+.cta-btn,
+.login-btn,
+.signup-btn,
+.submit-btn,
+.google-btn {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Touch targets for mobile */
+@media (max-width: 768px) {
+
+    button,
+    .btn,
+    .nav-link,
+    .class-category,
+    .feature,
+    a {
+        min-height: 44px;
+        min-width: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .nav-link {
+        min-height: 48px;
+        padding: 0.8rem 0;
+    }
+
+    .cta-btn {
+        min-height: 48px;
+        padding: 1rem 2rem;
+    }
+}
+
+/* Input improvements for mobile */
+input,
+textarea,
+select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    border-radius: 0;
+    font-size: 16px;
+    /* Prevent zoom on iOS */
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Focus improvements */
+button:focus,
+input:focus,
+textarea:focus,
+select:focus,
+a:focus {
+    outline: 2px solid var(--secondary-color);
+    outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .hero-background::before {
+        opacity: 0.6;
+    }
+
+    .class-overlay,
+    .feature {
+        border: 2px solid var(--text-color);
+    }
+
+    .nav-link::after {
+        height: 3px;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+
+    .hero-content h1,
+    .hero-content .subtitle,
+    .cta-btn {
+        animation: none;
+    }
+}
+
+/* Dark mode support (system preference) */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --text-color: #ffffff;
+        --text-secondary: rgba(255, 255, 255, 0.8);
+        --background-color: #000000;
+        --border-color: rgba(255, 255, 255, 0.1);
+    }
+}
+
+/* Print styles */
+@media print {
+
+    .navbar,
+    .mobile-menu-toggle,
+    .mobile-menu-overlay,
+    .modal,
+    .cta-btn,
+    .login-btn,
+    .signup-btn {
+        display: none !important;
+    }
+
+    .hero-background {
+        background: none !important;
+    }
+
+    .hero-background::before {
+        display: none;
+    }
+
+    body {
+        color: #000;
+        background: #fff;
+    }
+
+    .hero-content h1,
+    .section-title,
+    .class-overlay h3,
+    .feature h3 {
+        color: #000 !important;
+    }
+}
+
+/* Ultra-wide screen support */
+@media (min-width: 1920px) {
+    .container {
+        max-width: 1800px;
+    }
+
+    .hero-content h1 {
+        font-size: 6rem;
+    }
+
+    .classes-grid {
+        gap: 5rem;
+    }
+
+    .features {
+        gap: 6rem;
+    }
+}
+
+/* Very small screens (smartwatches, old phones) */
+@media (max-width: 280px) {
+    .hero-content h1 {
+        font-size: 1.5rem;
+        margin-bottom: 0.8rem;
+    }
+
+    .hero-content .subtitle {
+        font-size: 0.8rem;
+        margin-bottom: 1.2rem;
+    }
+
+    .cta-btn {
+        padding: 0.6rem 1.2rem;
+        font-size: 0.75rem;
+    }
+
+    .navbar {
+        padding: 0.4rem 0.2rem;
+    }
+
+    .logo-text-bottom {
+        font-size: 0.6rem;
+    }
+
+    .crown-left,
+    .crown-right {
+        font-size: 0.9rem;
+    }
+
+    .nav-links {
+        width: 180px;
+        padding: 3rem 0.4rem 1rem;
+    }
+
+    .modal-content {
+        padding: 0.6rem;
+        width: 100%;
+        margin: 5% auto;
+    }
+}
+
+/* Landscape orientation optimizations */
+@media (orientation: landscape) and (max-height: 600px) {
+    .hero {
+        padding: 80px 1rem 40px;
+    }
+
+    .hero-content h1 {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .hero-content .subtitle {
+        font-size: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .classes-section {
+        padding: 4rem 0;
+    }
+
+    .features-section {
+        padding: 4rem 0;
+    }
+}
+
+/* Fix for iOS safe areas */
+@supports (padding: max(0px)) {
+    .navbar {
+        padding-left: max(1rem, env(safe-area-inset-left));
+        padding-right: max(1rem, env(safe-area-inset-right));
+    }
+
+    .hero {
+        padding-left: max(1rem, env(safe-area-inset-left));
+        padding-right: max(1rem, env(safe-area-inset-right));
+    }
+
+    .container {
+        padding-left: max(1rem, env(safe-area-inset-left));
+        padding-right: max(1rem, env(safe-area-inset-right));
+    }
+
+    .nav-links {
+        padding-left: max(1rem, env(safe-area-inset-left));
+    }
+}
+
+/* Smooth scrolling for all browsers */
+html {
+    scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+}
+
+/* Performance optimizations */
+.hero-background::before,
+.class-image,
+.feature-icon {
+    will-change: transform;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+}
+
+/* Loading state improvements */
+.hero-background {
+    background-color: #000;
+}
+
+.hero-background::before {
+    background-color: #1a1a1a;
+    transition: opacity 0.3s ease;
+}
+
+/* Fallbacks for older browsers */
+.classes-grid {
+    display: -ms-grid;
+    display: grid;
+    -ms-grid-columns: 1fr 1fr 1fr;
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.features {
+    display: -ms-grid;
+    display: grid;
+    -ms-grid-columns: 1fr 1fr 1fr;
+    grid-template-columns: repeat(3, 1fr);
+}
+
+/* IE11 specific fixes */
+@media screen and (-ms-high-contrast: active),
+(-ms-high-contrast: none) {
+    .classes-grid {
+        display: -ms-grid;
+    }
+
+    .class-category:nth-child(1) {
+        -ms-grid-column: 1;
+    }
+
+    .class-category:nth-child(2) {
+        -ms-grid-column: 2;
+    }
+
+    .class-category:nth-child(3) {
+        -ms-grid-column: 3;
+    }
+}
+
+/* Text rendering optimizations */
+.hero-content h1,
+.section-title,
+.class-overlay h3,
+.feature h3 {
+    text-rendering: optimizeLegibility;
+    -webkit-font-feature-settings: "kern" 1;
+    font-feature-settings: "kern" 1;
+}
+
+/* Prevent text selection where inappropriate */
+.mobile-menu-toggle,
+.navbar,
+.class-category,
+.feature-icon {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+/* Ensure proper stacking context */
+.navbar {
+    z-index: 1000;
+    position: relative;
+    isolation: isolate;
+}
+
+.mobile-menu-toggle {
+    z-index: 1001;
+    position: relative;
+}
+
+.nav-links {
+    z-index: 1000;
+}
+
+.mobile-menu-overlay {
+    z-index: 999;
+}
+
+.modal {
+    z-index: 3000;
+}
+
+/* Container queries support (progressive enhancement) */
+@supports (container-type: inline-size) {
+    .container {
+        container-type: inline-size;
+    }
+
+    @container (max-width: 768px) {
+        .classes-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .features {
+            grid-template-columns: 1fr;
+        }
+    }
+}

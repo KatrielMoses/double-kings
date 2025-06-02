@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FREE Storage Demo - Double Kings Fitness</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+
+        .card {
+            background: #2a2a2a;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+            border: 1px solid #333;
+        }
+
+        .success {
+            color: #4CAF50;
+        }
+
+        .info {
+            color: #2196F3;
+        }
+
+        .warning {
+            color: #FF9800;
+        }
+
+        button {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        button:hover {
+            background: #c0392b;
+        }
+
+        input,
+        select,
+        textarea {
+            background: #333;
+            color: #fff;
+            border: 1px solid #555;
+            padding: 10px;
+            border-radius: 5px;
+            width: 100%;
+            box-sizing: border-box;
+            margin: 5px 0;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .stat-box {
+            background: #333;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #e74c3c;
+        }
+
+        .workout-list,
+        .goal-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .workout-item,
+        .goal-item {
+            background: #333;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            border-left: 4px solid #e74c3c;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🆓 FREE Storage Demo - Double Kings Fitness</h1>
+
+    <div class="card">
+        <h2 class="success">✅ Your website is running 100% FREE!</h2>
+        <p><strong>Monthly Cost: $0</strong> (within AWS Free Tier)</p>
+        <p><strong>Storage:</strong> Browser localStorage (5MB+ capacity)</p>
+        <p><strong>Hosting:</strong> AWS S3 + CloudFront</p>
+        <p><strong>SSL:</strong> Free AWS Certificate</p>
+    </div>
+
+    <div class="card">
+        <h3>📊 Storage Usage</h3>
+        <div id="storageInfo" class="info">Loading...</div>
+    </div>
+
+    <div class="card">
+        <h3>📈 Workout Statistics</h3>
+        <div id="workoutStats" class="stats">
+            <div class="stat-box">
+                <div class="stat-number" id="totalWorkouts">0</div>
+                <div>Total Workouts</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number" id="thisWeek">0</div>
+                <div>This Week</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number" id="thisMonth">0</div>
+                <div>This Month</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-number" id="totalTime">0</div>
+                <div>Minutes</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>💪 Add Workout</h3>
+        <input type="text" id="exerciseName" placeholder="Exercise name (e.g., Push-ups)" />
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px;">
+            <input type="number" id="sets" placeholder="Sets" />
+            <input type="number" id="reps" placeholder="Reps" />
+            <input type="number" id="weight" placeholder="Weight (kg)" />
+        </div>
+        <input type="number" id="duration" placeholder="Duration (minutes)" />
+        <textarea id="notes" placeholder="Notes (optional)"></textarea>
+        <button onclick="addWorkout()">Add Workout</button>
+    </div>
+
+    <div class="card">
+        <h3>🎯 Add Goal</h3>
+        <input type="text" id="goalTitle" placeholder="Goal title (e.g., Bench press 100kg)" />
+        <textarea id="goalDescription" placeholder="Description"></textarea>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <input type="number" id="targetValue" placeholder="Target value" />
+            <input type="date" id="targetDate" />
+        </div>
+        <select id="goalCategory">
+            <option value="strength">Strength</option>
+            <option value="cardio">Cardio</option>
+            <option value="weight">Weight</option>
+            <option value="flexibility">Flexibility</option>
+        </select>
+        <button onclick="addGoal()">Add Goal</button>
+    </div>
+
+    <div class="card">
+        <h3>📋 Recent Workouts</h3>
+        <div id="workoutList" class="workout-list">
+            <p class="info">No workouts yet. Add your first workout above!</p>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>🎯 Active Goals</h3>
+        <div id="goalList" class="goal-list">
+            <p class="info">No goals yet. Set your first goal above!</p>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>💾 Data Management</h3>
+        <button onclick="exportData()">Export Data</button>
+        <button onclick="document.getElementById('importFile').click()">Import Data</button>
+        <input type="file" id="importFile" style="display: none;" onchange="importData()" accept=".json" />
+        <button onclick="clearAllData()" style="background: #d32f2f;">Clear All Data</button>
+        <div id="exportResult" style="margin-top: 10px;"></div>
+    </div>
+
+    <script src="js/free-tier-storage.js"></script>
+    <script>
+        function updateDisplay() {
+            // Update storage info
+            const storageInfo = FreeStorage.getStorageInfo();
+            document.getElementById('storageInfo').innerHTML = `
+                Used: ${storageInfo.usedKB} KB / ${storageInfo.maxKB} KB 
+                (${storageInfo.percentUsed}% full)
+            `;
+
+            // Update workout stats
+            const stats = FreeStorage.getStats();
+            document.getElementById('totalWorkouts').textContent = stats.total;
+            document.getElementById('thisWeek').textContent = stats.thisWeek;
+            document.getElementById('thisMonth').textContent = stats.thisMonth;
+            document.getElementById('totalTime').textContent = Math.round(stats.totalTime);
+
+            // Update workout list
+            const workouts = FreeStorage.getWorkouts().slice(0, 5); // Show last 5
+            const workoutList = document.getElementById('workoutList');
+            if (workouts.length === 0) {
+                workoutList.innerHTML = '<p class="info">No workouts yet. Add your first workout above!</p>';
+            } else {
+                workoutList.innerHTML = workouts.map(w => `
+                    <div class="workout-item">
+                        <strong>${w.exercise}</strong><br>
+                        ${w.sets} sets × ${w.reps} reps${w.weight ? ` @ ${w.weight}kg` : ''}
+                        ${w.duration ? ` • ${w.duration} min` : ''}
+                        ${w.notes ? `<br><em>${w.notes}</em>` : ''}
+                        <br><small>${new Date(w.createdAt).toLocaleDateString()}</small>
+                    </div>
+                `).join('');
+            }
+
+            // Update goal list
+            const goals = FreeStorage.getGoals().filter(g => g.status === 'active').slice(0, 5);
+            const goalList = document.getElementById('goalList');
+            if (goals.length === 0) {
+                goalList.innerHTML = '<p class="info">No active goals. Set your first goal above!</p>';
+            } else {
+                goalList.innerHTML = goals.map(g => `
+                    <div class="goal-item">
+                        <strong>${g.title}</strong><br>
+                        ${g.description || ''}
+                        ${g.targetValue ? `<br>Target: ${g.targetValue}` : ''}
+                        ${g.targetDate ? `<br>Due: ${new Date(g.targetDate).toLocaleDateString()}` : ''}
+                        <br><small>Category: ${g.category}</small>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function addWorkout() {
+            const workout = {
+                exercise: document.getElementById('exerciseName').value,
+                sets: parseInt(document.getElementById('sets').value) || 0,
+                reps: parseInt(document.getElementById('reps').value) || 0,
+                weight: parseFloat(document.getElementById('weight').value) || 0,
+                duration: parseInt(document.getElementById('duration').value) || 0,
+                notes: document.getElementById('notes').value
+            };
+
+            if (!workout.exercise) {
+                alert('Please enter an exercise name');
+                return;
+            }
+
+            FreeStorage.addWorkout(workout);
+
+            // Clear form
+            document.getElementById('exerciseName').value = '';
+            document.getElementById('sets').value = '';
+            document.getElementById('reps').value = '';
+            document.getElementById('weight').value = '';
+            document.getElementById('duration').value = '';
+            document.getElementById('notes').value = '';
+
+            updateDisplay();
+            alert('Workout added successfully!');
+        }
+
+        function addGoal() {
+            const goal = {
+                title: document.getElementById('goalTitle').value,
+                description: document.getElementById('goalDescription').value,
+                targetValue: parseFloat(document.getElementById('targetValue').value) || null,
+                targetDate: document.getElementById('targetDate').value || null,
+                category: document.getElementById('goalCategory').value
+            };
+
+            if (!goal.title) {
+                alert('Please enter a goal title');
+                return;
+            }
+
+            FreeStorage.addGoal(goal);
+
+            // Clear form
+            document.getElementById('goalTitle').value = '';
+            document.getElementById('goalDescription').value = '';
+            document.getElementById('targetValue').value = '';
+            document.getElementById('targetDate').value = '';
+            document.getElementById('goalCategory').value = 'strength';
+
+            updateDisplay();
+            alert('Goal added successfully!');
+        }
+
+        function exportData() {
+            const data = FreeStorage.exportData();
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `fitness-data-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+
+            document.getElementById('exportResult').innerHTML =
+                '<span class="success">✅ Data exported successfully!</span>';
+        }
+
+        function importData() {
+            const file = document.getElementById('importFile').files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const result = FreeStorage.importData(e.target.result);
+                if (result.success) {
+                    updateDisplay();
+                    document.getElementById('exportResult').innerHTML =
+                        '<span class="success">✅ Data imported successfully!</span>';
+                } else {
+                    document.getElementById('exportResult').innerHTML =
+                        '<span class="warning">⚠️ Import failed: ' + result.message + '</span>';
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function clearAllData() {
+            if (confirm('Are you sure you want to clear all data? This cannot be undone!')) {
+                localStorage.clear();
+                location.reload();
+            }
+        }
+
+        // Initialize display
+        updateDisplay();
+
+        // Auto-refresh every 30 seconds
+        setInterval(updateDisplay, 30000);
+    </script>
+</body>
+
+</html>

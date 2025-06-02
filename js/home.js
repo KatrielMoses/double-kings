@@ -1,11 +1,13 @@
-import { auth, db, supabase } from './supabase-config.js';
+// FREE TIER AUTHENTICATION - No Supabase needed!
+// Uses browser localStorage for 100% FREE authentication
 
 let currentUser = null;
 
 // Initialize home page
 document.addEventListener('DOMContentLoaded', async () => {
     try {
-        currentUser = await auth.getCurrentUser();
+        // Get current user from localStorage (no async needed)
+        currentUser = auth.getCurrentUser();
 
         const loginBtn = document.getElementById('loginBtn');
         const signupBtn = document.getElementById('signupBtn');
@@ -15,22 +17,20 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (currentUser) {
             // User is logged in
-            const userProfileData = await db.getUserProfile(currentUser.id);
-
             // Hide login/signup buttons, show user profile
-            loginBtn.style.display = 'none';
-            signupBtn.style.display = 'none';
-            userProfile.style.display = 'flex';
+            if (loginBtn) loginBtn.style.display = 'none';
+            if (signupBtn) signupBtn.style.display = 'none';
+            if (userProfile) userProfile.style.display = 'flex';
 
             // Update user name
-            if (userName && userProfileData?.name) {
-                userName.textContent = userProfileData.name;
+            if (userName) {
+                userName.textContent = currentUser.name || currentUser.email || 'User';
             }
         } else {
             // User is not logged in
-            loginBtn.style.display = 'block';
-            signupBtn.style.display = 'block';
-            userProfile.style.display = 'none';
+            if (loginBtn) loginBtn.style.display = 'block';
+            if (signupBtn) signupBtn.style.display = 'block';
+            if (userProfile) userProfile.style.display = 'none';
         }
 
         // Modal handlers
@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Logout handler
         if (logoutBtn) {
             logoutBtn.addEventListener('click', async () => {
-                await auth.signOut();
+                auth.signOut();
                 window.location.reload();
             });
         }
@@ -47,14 +47,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Login button handler
         if (loginBtn) {
             loginBtn.addEventListener('click', () => {
-                document.getElementById('loginModal').style.display = 'block';
+                const loginModal = document.getElementById('loginModal');
+                if (loginModal) loginModal.style.display = 'block';
             });
         }
 
         // Signup button handler
         if (signupBtn) {
             signupBtn.addEventListener('click', () => {
-                document.getElementById('signupModal').style.display = 'block';
+                const signupModal = document.getElementById('signupModal');
+                if (signupModal) signupModal.style.display = 'block';
             });
         }
 
@@ -85,16 +87,20 @@ function setupModalHandlers() {
     if (switchToSignup) {
         switchToSignup.addEventListener('click', (e) => {
             e.preventDefault();
-            document.getElementById('loginModal').style.display = 'none';
-            document.getElementById('signupModal').style.display = 'block';
+            const loginModal = document.getElementById('loginModal');
+            const signupModal = document.getElementById('signupModal');
+            if (loginModal) loginModal.style.display = 'none';
+            if (signupModal) signupModal.style.display = 'block';
         });
     }
 
     if (switchToLogin) {
         switchToLogin.addEventListener('click', (e) => {
             e.preventDefault();
-            document.getElementById('signupModal').style.display = 'none';
-            document.getElementById('loginModal').style.display = 'block';
+            const signupModal = document.getElementById('signupModal');
+            const loginModal = document.getElementById('loginModal');
+            if (signupModal) signupModal.style.display = 'none';
+            if (loginModal) loginModal.style.display = 'block';
         });
     }
 
@@ -115,7 +121,8 @@ function setupModalHandlers() {
                 const result = await auth.signIn(email, password);
 
                 if (result.success) {
-                    document.getElementById('loginModal').style.display = 'none';
+                    const loginModal = document.getElementById('loginModal');
+                    if (loginModal) loginModal.style.display = 'none';
                     window.location.reload();
                 } else {
                     alert('Login failed: ' + result.error);
@@ -153,9 +160,10 @@ function setupModalHandlers() {
                 const result = await auth.signUp(email, password, name);
 
                 if (result.success) {
-                    alert('Account created successfully! Please check your email to verify your account.');
-                    document.getElementById('signupModal').style.display = 'none';
-                    // User will need to verify email before they can log in
+                    alert('Account created successfully! You are now logged in.');
+                    const signupModal = document.getElementById('signupModal');
+                    if (signupModal) signupModal.style.display = 'none';
+                    window.location.reload();
                 } else {
                     alert('Signup failed: ' + result.error);
                 }
@@ -177,7 +185,9 @@ function setupModalHandlers() {
             try {
                 const result = await auth.signInWithGoogle();
                 if (result.success) {
-                    document.getElementById('loginModal').style.display = 'none';
+                    const loginModal = document.getElementById('loginModal');
+                    if (loginModal) loginModal.style.display = 'none';
+                    window.location.reload();
                 } else {
                     alert('Google sign-in failed: ' + result.error);
                 }
@@ -192,7 +202,9 @@ function setupModalHandlers() {
             try {
                 const result = await auth.signInWithGoogle();
                 if (result.success) {
-                    document.getElementById('signupModal').style.display = 'none';
+                    const signupModal = document.getElementById('signupModal');
+                    if (signupModal) signupModal.style.display = 'none';
+                    window.location.reload();
                 } else {
                     alert('Google sign-in failed: ' + result.error);
                 }

@@ -1,22 +1,19 @@
-import { auth, db, supabase } from './supabase-config.js';
+// FREE TIER AUTHENTICATION - No Supabase needed!
+// Uses browser localStorage for 100% FREE authentication
 
 let currentUser = null;
 
 // Initialize authentication
 async function initAuth() {
     try {
-        currentUser = await auth.getCurrentUser();
+        // Get current user from localStorage
+        currentUser = auth.getCurrentUser();
         updateUI();
 
         // Listen for auth state changes
-        auth.onAuthStateChange((event, session) => {
-            if (session) {
-                currentUser = session.user;
-                updateUI();
-            } else {
-                currentUser = null;
-                updateUI();
-            }
+        auth.onAuthStateChange((event) => {
+            currentUser = event.user;
+            updateUI();
         });
     } catch (error) {
         console.error('Error initializing auth:', error);
@@ -34,20 +31,14 @@ async function updateUI() {
     const goalsLink = document.getElementById('goals-link');
 
     if (currentUser) {
-        const userProfileData = await db.getUserProfile(currentUser.id);
-
         // Hide login/signup buttons, show user profile
         if (loginBtn) loginBtn.style.display = 'none';
         if (signupBtn) signupBtn.style.display = 'none';
         if (userProfile) userProfile.style.display = 'flex';
 
         // Update user name
-        if (userName && userProfileData?.name) {
-            userName.textContent = userProfileData.name;
-        } else if (userName && currentUser.user_metadata?.name) {
-            userName.textContent = currentUser.user_metadata.name;
-        } else if (userName && currentUser.email) {
-            userName.textContent = currentUser.email;
+        if (userName) {
+            userName.textContent = currentUser.name || currentUser.email || 'User';
         }
 
         // Enable navigation links
@@ -88,14 +79,15 @@ async function updateUI() {
 // Logout function
 async function logout() {
     try {
-        const result = await auth.signOut();
-        if (result.success || result.error?.message?.includes('not signed in')) {
+        const result = auth.signOut();
+        if (result.success) {
             currentUser = null;
             updateUI();
             // Redirect to home page if on protected page
             if (window.location.pathname !== '/' && window.location.pathname !== '/index.html') {
                 window.location.href = 'index.html';
             }
+            showNotification('Successfully logged out!', 'success');
         }
     } catch (error) {
         console.error('Error during logout:', error);
@@ -259,9 +251,9 @@ function setupFormHandlers() {
                 const result = await auth.signUp(email, password, name);
 
                 if (result.success) {
-                    showNotification('Account created successfully! Please check your email to verify your account.', 'success');
                     const signupModal = document.getElementById('signupModal');
                     if (signupModal) signupModal.style.display = 'none';
+                    showNotification('Account created successfully!', 'success');
                 } else {
                     showNotification('Signup failed: ' + result.error, 'error');
                 }
@@ -299,49 +291,87 @@ async function handleGoogleSignIn() {
 
 // Setup animations
 function setupAnimations() {
-    // Animate elements on scroll
+    // Intersection Observer for scroll animations
     const animateOnScroll = () => {
-        const elements = document.querySelectorAll('.feature, .template-card, .stat-card');
-        elements.forEach(element => {
-            const elementTop = element.getBoundingClientRect().top;
-            const elementVisible = 150;
+        const elements = document.querySelectorAll('.feature, .class-category');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        });
 
-            if (elementTop < window.innerHeight - elementVisible) {
-                element.classList.add('animate-in');
-            }
+        elements.forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(30px)';
+            el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+            observer.observe(el);
         });
     };
 
-    window.addEventListener('scroll', animateOnScroll);
-    animateOnScroll(); // Run once on load
+    animateOnScroll();
 }
 
 // Notification system
 export function showNotification(message, type = 'success') {
+    // Remove existing notifications
+    const existingNotifications = document.querySelectorAll('.notification');
+    existingNotifications.forEach(n => n.remove());
+
+    // Create notification element
     const notification = document.createElement('div');
-    notification.className = `notification ${type}`;
+    notification.className = `notification notification-${type}`;
     notification.innerHTML = `
         <div class="notification-content">
-            <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
-            <span>${message}</span>
+            <span class="notification-icon">
+                ${type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'}
+            </span>
+            <span class="notification-message">${message}</span>
+            <button class="notification-close">&times;</button>
         </div>
     `;
 
+    // Add styles
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 10000;
+        background: ${type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : '#2196F3'};
+        color: white;
+        padding: 15px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        font-family: Arial, sans-serif;
+        font-size: 14px;
+        min-width: 300px;
+        max-width: 500px;
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+    `;
+
+    // Add to document
     document.body.appendChild(notification);
 
-    // Trigger animation
-    setTimeout(() => notification.classList.add('show'), 100);
-
-    // Auto remove after 5 seconds
+    // Animate in
     setTimeout(() => {
-        notification.classList.remove('show');
-        setTimeout(() => {
-            if (notification.parentNode) {
-                notification.parentNode.removeChild(notification);
-            }
-        }, 300);
-    }, 5000);
-}
+        notification.style.transform = 'translateX(0)';
+    }, 10);
 
-// Export functions for use in other modules
-export { logout, initAuth, updateUI }; 
+    // Close button functionality
+    const closeBtn = notification.querySelector('.notification-close');
+    closeBtn.addEventListener('click', () => {
+        notification.style.transform = 'translateX(100%)';
+        setTimeout(() => notification.remove(), 300);
+    });
+
+    // Auto-remove after 5 seconds
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.style.transform = 'translateX(100%)';
+            setTimeout(() => notification.remove(), 300);
+        }
+    }, 5000);
+} 
