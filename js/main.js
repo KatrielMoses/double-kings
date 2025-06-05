@@ -115,13 +115,13 @@ function setupEventListeners() {
     // Event Listeners
     if (loginBtn) {
         loginBtn.addEventListener('click', () => {
-            if (loginModal) loginModal.style.display = 'block';
+            if (loginModal) loginModal.style.display = 'flex';
         });
     }
 
     if (signupBtn) {
         signupBtn.addEventListener('click', () => {
-            if (signupModal) signupModal.style.display = 'block';
+            if (signupModal) signupModal.style.display = 'flex';
         });
     }
 
@@ -130,7 +130,7 @@ function setupEventListeners() {
             if (currentUser) {
                 window.location.href = 'workout-logger.html';
             } else {
-                if (signupModal) signupModal.style.display = 'block';
+                if (signupModal) signupModal.style.display = 'flex';
             }
         });
     }
@@ -164,7 +164,7 @@ function setupEventListeners() {
         switchToSignup.addEventListener('click', (e) => {
             e.preventDefault();
             if (loginModal) loginModal.style.display = 'none';
-            if (signupModal) signupModal.style.display = 'block';
+            if (signupModal) signupModal.style.display = 'flex';
         });
     }
 
@@ -172,7 +172,7 @@ function setupEventListeners() {
         switchToLogin.addEventListener('click', (e) => {
             e.preventDefault();
             if (signupModal) signupModal.style.display = 'none';
-            if (loginModal) loginModal.style.display = 'block';
+            if (loginModal) loginModal.style.display = 'flex';
         });
     }
 

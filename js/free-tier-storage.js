@@ -131,6 +131,11 @@ class FreeStorageService {
         return this.getData(this.storageKeys.profile);
     }
 
+    saveProfile(profileData) {
+        this.saveData(this.storageKeys.profile, profileData);
+        return profileData;
+    }
+
     updateProfile(profileData) {
         const currentProfile = this.getProfile() || {};
         const updatedProfile = {

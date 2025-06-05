@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (loginBtn) {
             loginBtn.addEventListener('click', () => {
                 const loginModal = document.getElementById('loginModal');
-                if (loginModal) loginModal.style.display = 'block';
+                if (loginModal) loginModal.style.display = 'flex';
             });
         }
 
@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (signupBtn) {
             signupBtn.addEventListener('click', () => {
                 const signupModal = document.getElementById('signupModal');
-                if (signupModal) signupModal.style.display = 'block';
+                if (signupModal) signupModal.style.display = 'flex';
             });
         }
 
@@ -90,7 +90,7 @@ function setupModalHandlers() {
             const loginModal = document.getElementById('loginModal');
             const signupModal = document.getElementById('signupModal');
             if (loginModal) loginModal.style.display = 'none';
-            if (signupModal) signupModal.style.display = 'block';
+            if (signupModal) signupModal.style.display = 'flex';
         });
     }
 
@@ -100,7 +100,7 @@ function setupModalHandlers() {
             const signupModal = document.getElementById('signupModal');
             const loginModal = document.getElementById('loginModal');
             if (signupModal) signupModal.style.display = 'none';
-            if (loginModal) loginModal.style.display = 'block';
+            if (loginModal) loginModal.style.display = 'flex';
         });
     }
 
@@ -131,7 +131,7 @@ function setupModalHandlers() {
                 alert('Login error: ' + error.message);
             } finally {
                 submitBtn.disabled = false;
-                submitBtn.textContent = 'Login';
+                submitBtn.textContent = 'LOGIN';
             }
         });
     }
@@ -171,7 +171,7 @@ function setupModalHandlers() {
                 alert('Signup error: ' + error.message);
             } finally {
                 submitBtn.disabled = false;
-                submitBtn.textContent = 'Create Account';
+                submitBtn.textContent = 'CREATE ACCOUNT';
             }
         });
     }

@@ -18,8 +18,8 @@ app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Use port 3001 since 8080 is already in use
-const PORT = process.env.PORT || 3001;
+// Use port 8080 since 8080 is already in use
+const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
     console.log(`Make sure this matches the authorized origin in Google Cloud Console.`);

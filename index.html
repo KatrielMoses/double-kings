@@ -3,633 +3,288 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Double Kings Fitness - Transform Your Body, Elevate Your Mind</title>
-    <meta name="description"
-        content="Professional fitness tracking and goal achievement platform. Track workouts, monitor progress, and achieve your fitness goals with Double Kings Fitness.">
-
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;900&display=swap"
-        rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-
-    <!-- Stylesheets -->
-    <link rel="stylesheet" href="styles/modern-redesign.css">
-
-    <!-- Meta tags for social sharing -->
-    <meta property="og:title" content="Double Kings Fitness - Transform Your Body">
-    <meta property="og:description" content="Professional fitness tracking platform with advanced features">
-    <meta property="og:type" content="website">
-    <meta name="twitter:card" content="summary_large_image">
-
-    <!-- Favicon -->
-    <link rel="icon" type="image/x-icon"
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Double Kings Fitness</title>
+    <link rel="icon"
         href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👑</text></svg>">
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/home.css">
+    <link rel="stylesheet" href="styles/responsive-fixes.css">
+    <link rel="stylesheet" href="styles/notifications.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
+
+    <!-- Clerk Configuration -->
+    <script src="js/clerk-config.js"></script>
+
+    <!-- Clerk Authentication Script -->
+    <script async crossorigin="anonymous"
+        data-clerk-publishable-key="pk_test_cG93ZXJmdWwtbG9uZ2hvcm4tNDQuY2xlcmsuYWNjb3VudHMuZGV2JA"
+        src="https://powerful-longhorn-44.clerk.accounts.dev/npm/@clerk/clerk-js@latest/dist/clerk.browser.js"
+        type="text/javascript">
+        </script>
 </head>
 
 <body>
-    <!-- =============================================
-         MODERN NAVIGATION
-         ============================================= -->
-    <nav class="modern-navbar" id="navbar">
-        <div class="navbar-container">
-            <!-- Logo -->
-            <div class="modern-logo">
-                <div class="logo-crown">
-                    <span class="crown-icon">👑</span>
-                    <span class="crown-icon">👑</span>
-                </div>
-                <div class="logo-text">
-                    <div class="logo-title">Double Kings</div>
-                    <div class="logo-subtitle">Fitness</div>
-                </div>
-            </div>
+    <!-- Hero Section with Gym Background -->
+    <div class="hero-background">
+        <div class="hero-overlay"></div>
 
-            <!-- Desktop Navigation -->
-            <ul class="modern-nav-links">
-                <li class="nav-item">
-                    <a href="#home" class="nav-link active">Home</a>
-                </li>
-                <li class="nav-item">
-                    <a href="#features" class="nav-link">Features</a>
-                </li>
-                <li class="nav-item">
-                    <a href="#classes" class="nav-link">Classes</a>
-                </li>
-                <li class="nav-item">
-                    <a href="#about" class="nav-link">About</a>
-                </li>
-                <li class="nav-item">
-                    <a href="#contact" class="nav-link">Contact</a>
-                </li>
-            </ul>
-
-            <!-- Auth Buttons -->
-            <div class="auth-buttons">
-                <button class="modern-btn btn-outline" data-modal="login-modal">Login</button>
-                <button class="modern-btn btn-primary" data-modal="signup-modal">Sign Up</button>
+        <nav class="navbar">
+            <div class="logo">
+                <div class="logo-icon">
+                    <div class="crown-container">
+                        <span class="crown-left"><i class="fas fa-crown"></i></span>
+                        <span class="crown-right"><i class="fas fa-crown"></i></span>
+                    </div>
+                    <span class="logo-text-bottom">Double Kings</span>
+                </div>
             </div>
 
             <!-- Mobile Menu Toggle -->
-            <button class="mobile-menu-toggle" aria-label="Toggle mobile menu">
-                <span class="hamburger-line"></span>
-                <span class="hamburger-line"></span>
-                <span class="hamburger-line"></span>
-            </button>
-        </div>
-    </nav>
-
-    <!-- Mobile Menu Overlay -->
-    <div class="mobile-menu-overlay"></div>
-
-    <!-- Mobile Navigation Menu -->
-    <div class="mobile-nav-menu">
-        <div class="mobile-nav-header">
-            <div class="mobile-logo">
-                <span class="crown-icon">👑👑</span>
-                <span>Double Kings Fitness</span>
+            <div class="mobile-menu-toggle" id="mobileMenuToggle">
+                <span></span>
+                <span></span>
+                <span></span>
             </div>
-            <button class="mobile-nav-close" aria-label="Close menu">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-        <div class="mobile-nav-links">
-            <a href="#home" class="mobile-nav-link">Home</a>
-            <a href="#features" class="mobile-nav-link">Features</a>
-            <a href="#classes" class="mobile-nav-link">Classes</a>
-            <a href="#about" class="mobile-nav-link">About</a>
-            <a href="#contact" class="mobile-nav-link">Contact</a>
-        </div>
-        <div class="mobile-auth-section">
-            <button class="modern-btn btn-primary" data-modal="signup-modal">Get Started</button>
-            <button class="modern-btn btn-outline" data-modal="login-modal">Sign In</button>
-        </div>
+
+            <!-- Mobile Menu Overlay -->
+            <div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>
+
+            <div class="nav-links" id="navLinks">
+                <!-- Mobile Menu Header -->
+                <div class="mobile-nav-header">
+                    <button class="mobile-nav-close" id="mobileNavClose">
+                        <i class="fas fa-times"></i>
+                    </button>
+                    <div class="mobile-nav-logo">
+                        <div class="crown-container">
+                            <span class="crown-left"><i class="fas fa-crown"></i></span>
+                            <span class="crown-right"><i class="fas fa-crown"></i></span>
+                        </div>
+                        <span class="mobile-nav-title">Double Kings</span>
+                        <span class="mobile-nav-subtitle">FITNESS</span>
+                    </div>
+                </div>
+
+                <a href="index.html" class="nav-link active">Home</a>
+                <a href="workout-logger.html" class="nav-link" id="workout-link">Workout Logger</a>
+                <a href="progress-monitoring.html" class="nav-link" id="progress-link">Progress Monitoring</a>
+                <a href="goal-setting.html" class="nav-link" id="goals-link">Goal Setting</a>
+
+                <!-- Clerk Authentication Section -->
+                <div class="auth-section" id="auth-section">
+                    <!-- This will be populated by Clerk -->
+                    <div id="clerk-sign-in-button" style="display: none;"></div>
+                    <div id="clerk-sign-up-button" style="display: none;"></div>
+                    <div id="clerk-user-button" style="display: none;"></div>
+                </div>
+            </div>
+        </nav>
+
+        <main class="hero">
+            <div class="hero-content">
+                <h1>Train Hard, Track EZ!</h1>
+                <p class="subtitle">Whether you're beginning your fitness journey or an experienced lifter, we want to
+                    help you reach your goals.</p>
+            </div>
+        </main>
     </div>
 
-    <!-- =============================================
-         HERO SECTION
-         ============================================= -->
-    <section class="modern-hero" id="home">
-        <div class="hero-particles">
-            <div class="particle"></div>
-            <div class="particle"></div>
-            <div class="particle"></div>
-            <div class="particle"></div>
-            <div class="particle"></div>
-            <div class="particle"></div>
-            <div class="particle"></div>
-            <div class="particle"></div>
-        </div>
+    <!-- Features Section -->
+    <section class="classes-section">
+        <div class="container">
+            <h2 class="section-title">YOUR FITNESS JOURNEY</h2>
 
-        <div class="hero-content">
-            <h1 class="hero-title">
-                <span class="title-line">
-                    <span class="title-text">Transform</span>
-                </span>
-                <span class="title-line">
-                    <span class="title-text">Your Body</span>
-                </span>
-                <span class="title-line">
-                    <span class="title-text">Elevate Your Mind</span>
-                </span>
-            </h1>
-
-            <p class="hero-subtitle">
-                Join the elite fitness tracking platform where champions are made.
-                Monitor your progress, achieve your goals, and unlock your true potential
-                with our advanced workout logging and progress tracking system.
-            </p>
-
-            <div class="hero-cta">
-                <a href="#" class="cta-primary" data-modal="signup-modal">
-                    Start Your Journey
-                    <i class="fas fa-arrow-right" style="margin-left: 0.5rem;"></i>
-                </a>
-
-                <div class="hero-stats">
-                    <div class="stat-item">
-                        <span class="stat-number">10K+</span>
-                        <span class="stat-label">Active Users</span>
+            <div class="classes-grid">
+                <!-- Workout Logger Section -->
+                <div class="class-category">
+                    <div class="class-image workout-logger-bg">
+                        <div class="class-overlay">
+                            <h3>WORKOUT LOGGER</h3>
+                            <p>Track your sets, reps, and weights</p>
+                        </div>
                     </div>
-                    <div class="stat-item">
-                        <span class="stat-number">50K+</span>
-                        <span class="stat-label">Workouts Logged</span>
+                </div>
+
+                <!-- Progress Monitoring Section -->
+                <div class="class-category">
+                    <div class="class-image progress-monitoring-bg">
+                        <div class="class-overlay">
+                            <h3>PROGRESS MONITORING</h3>
+                            <p>See your strength gains over time</p>
+                        </div>
                     </div>
-                    <div class="stat-item">
-                        <span class="stat-number">98%</span>
-                        <span class="stat-label">Success Rate</span>
+                </div>
+
+                <!-- Goal Setting Section -->
+                <div class="class-category">
+                    <div class="class-image goal-setting-bg">
+                        <div class="class-overlay">
+                            <h3>GOAL SETTING</h3>
+                            <p>Set and achieve your fitness goals</p>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- =============================================
-         FEATURES SECTION
-         ============================================= -->
-    <section class="features-section" id="features">
+    <!-- Features Section -->
+    <section class="features-section">
         <div class="container">
-            <div class="section-header">
-                <h2 class="section-title text-gradient">Why Choose Double Kings?</h2>
-                <p class="section-subtitle">Powerful features designed for serious fitness enthusiasts</p>
-            </div>
-
-            <div class="features-grid">
-                <div class="feature-card" data-aos="fade-up" data-aos-delay="100">
+            <div class="features">
+                <div class="feature">
                     <div class="feature-icon">
                         <i class="fas fa-dumbbell"></i>
                     </div>
-                    <h3 class="feature-title">Smart Workout Tracking</h3>
-                    <p class="feature-description">
-                        Log workouts with precision. Track sets, reps, weights, and progress
-                        with our intelligent logging system that adapts to your routine.
-                    </p>
-                    <div class="feature-highlight">
-                        <span class="highlight-text">AI-Powered</span>
-                    </div>
+                    <h3>Personal Training</h3>
+                    <p>One-on-one sessions tailored to your specific goals and fitness level.</p>
                 </div>
-
-                <div class="feature-card" data-aos="fade-up" data-aos-delay="200">
-                    <div class="feature-icon">
-                        <i class="fas fa-chart-line"></i>
-                    </div>
-                    <h3 class="feature-title">Advanced Analytics</h3>
-                    <p class="feature-description">
-                        Visualize your progress with detailed charts, trends, and insights.
-                        Make data-driven decisions to optimize your fitness journey.
-                    </p>
-                    <div class="feature-highlight">
-                        <span class="highlight-text">Real-time</span>
-                    </div>
-                </div>
-
-                <div class="feature-card" data-aos="fade-up" data-aos-delay="300">
-                    <div class="feature-icon">
-                        <i class="fas fa-target"></i>
-                    </div>
-                    <h3 class="feature-title">Goal Achievement</h3>
-                    <p class="feature-description">
-                        Set SMART goals and track milestones. Our system helps you stay
-                        motivated and accountable throughout your fitness transformation.
-                    </p>
-                    <div class="feature-highlight">
-                        <span class="highlight-text">Proven</span>
-                    </div>
-                </div>
-
-                <div class="feature-card" data-aos="fade-up" data-aos-delay="400">
+                <div class="feature">
                     <div class="feature-icon">
                         <i class="fas fa-users"></i>
                     </div>
-                    <h3 class="feature-title">Community Support</h3>
-                    <p class="feature-description">
-                        Connect with like-minded individuals. Share achievements, get motivation,
-                        and build lasting relationships in our supportive community.
-                    </p>
-                    <div class="feature-highlight">
-                        <span class="highlight-text">Social</span>
-                    </div>
+                    <h3>Group Classes</h3>
+                    <p>High-energy group workouts that push you to your limits while building community.</p>
                 </div>
-
-                <div class="feature-card" data-aos="fade-up" data-aos-delay="500">
+                <div class="feature">
                     <div class="feature-icon">
-                        <i class="fas fa-mobile-alt"></i>
+                        <i class="fas fa-chart-line"></i>
                     </div>
-                    <h3 class="feature-title">Cross-Platform Sync</h3>
-                    <p class="feature-description">
-                        Access your data anywhere, anytime. Seamless synchronization across
-                        all your devices keeps you connected to your fitness journey.
-                    </p>
-                    <div class="feature-highlight">
-                        <span class="highlight-text">Synced</span>
-                    </div>
-                </div>
-
-                <div class="feature-card" data-aos="fade-up" data-aos-delay="600">
-                    <div class="feature-icon">
-                        <i class="fas fa-shield-alt"></i>
-                    </div>
-                    <h3 class="feature-title">Privacy First</h3>
-                    <p class="feature-description">
-                        Your data is secure with enterprise-grade encryption. We prioritize
-                        your privacy while delivering exceptional fitness tracking experience.
-                    </p>
-                    <div class="feature-highlight">
-                        <span class="highlight-text">Secure</span>
-                    </div>
+                    <h3>Progress Tracking</h3>
+                    <p>Monitor your strength gains and celebrate your achievements with our tracking system.</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- =============================================
-         LOGIN MODAL
-         ============================================= -->
-    <div class="modern-modal" id="login-modal">
-        <div class="modal-container">
-            <button class="modal-close" aria-label="Close modal">
-                <i class="fas fa-times"></i>
-            </button>
-
-            <div class="modal-header">
-                <h2 class="modal-title">Welcome Back</h2>
-                <p class="modal-subtitle">Sign in to continue your fitness journey</p>
-            </div>
-
-            <form class="modern-form" id="login-form">
-                <div class="form-group">
-                    <input type="email" name="email" class="form-input" placeholder="Email Address" required
-                        autocomplete="email">
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <div class="logo-icon">
+                        <div class="crown-container">
+                            <span class="crown-left"><i class="fas fa-crown"></i></span>
+                            <span class="crown-right"><i class="fas fa-crown"></i></span>
+                        </div>
+                        <span class="logo-text-bottom">Double Kings</span>
+                    </div>
                 </div>
-
-                <div class="form-group">
-                    <input type="password" name="password" class="form-input" placeholder="Password" required
-                        autocomplete="current-password">
-                </div>
-
-                <button type="submit" class="form-submit">
-                    <span class="loading-spinner"></span>
-                    Sign In
-                </button>
-
-                <div class="auth-divider">
-                    <span class="divider-text">or continue with</span>
-                </div>
-
-                <button type="button" class="google-signin" onclick="professionalUI.handleGoogleSignIn()">
-                    <svg width="20" height="20" viewBox="0 0 24 24">
-                        <path fill="#4285f4"
-                            d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                        <path fill="#34a853"
-                            d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                        <path fill="#fbbc05"
-                            d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-                        <path fill="#ea4335"
-                            d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-                    </svg>
-                    Continue with Google
-                </button>
-            </form>
-
-            <div class="auth-switch">
-                Don't have an account?
-                <a href="#" data-modal="signup-modal"
-                    onclick="professionalUI.closeModal(); setTimeout(() => professionalUI.openModal('signup-modal'), 300);">
-                    Sign up
-                </a>
+                <p>&copy; 2023 Double Kings Fitness. All rights reserved.</p>
             </div>
         </div>
-    </div>
+    </footer>
 
-    <!-- =============================================
-         SIGNUP MODAL
-         ============================================= -->
-    <div class="modern-modal" id="signup-modal">
-        <div class="modal-container">
-            <button class="modal-close" aria-label="Close modal">
-                <i class="fas fa-times"></i>
-            </button>
+    <!-- Clerk Authentication JavaScript -->
+    <script>
+        window.addEventListener('load', async function () {
+            try {
+                // Check if Clerk is available and properly configured
+                if (!window.Clerk) {
+                    console.error('Clerk is not loaded. Please check your script tags and API keys.');
+                    return;
+                }
 
-            <div class="modal-header">
-                <h2 class="modal-title">Join Double Kings</h2>
-                <p class="modal-subtitle">Start your transformation journey today</p>
-            </div>
+                await Clerk.load();
 
-            <form class="modern-form" id="signup-form">
-                <div class="form-group">
-                    <input type="text" name="name" class="form-input" placeholder="Full Name" required
-                        autocomplete="name">
-                </div>
+                // Check configuration
+                if (!window.ClerkConfig.isConfigured()) {
+                    console.warn('⚠️ Clerk is not properly configured. Please update js/clerk-config.js with your actual Clerk keys.');
+                    console.log('📝 Setup instructions:');
+                    console.log('1. Create an account at https://clerk.com');
+                    console.log('2. Create a new application in your dashboard');
+                    console.log('3. Go to API Keys and copy your keys');
+                    console.log('4. Update js/clerk-config.js with your actual keys');
+                    console.log('5. Update the script tag src in index.html with your Frontend API URL');
+                }
 
-                <div class="form-group">
-                    <input type="email" name="email" class="form-input" placeholder="Email Address" required
-                        autocomplete="email">
-                </div>
+                // Initialize authentication state management
+                function updateAuthUI() {
+                    const authSection = document.getElementById('auth-section');
+                    const signInButton = document.getElementById('clerk-sign-in-button');
+                    const signUpButton = document.getElementById('clerk-sign-up-button');
+                    const userButton = document.getElementById('clerk-user-button');
 
-                <div class="form-group">
-                    <input type="password" name="password" class="form-input" placeholder="Password (min. 6 characters)"
-                        required autocomplete="new-password">
-                </div>
+                    if (Clerk.user) {
+                        // User is signed in
+                        signInButton.style.display = 'none';
+                        signUpButton.style.display = 'none';
+                        userButton.style.display = 'block';
 
-                <button type="submit" class="form-submit">
-                    <span class="loading-spinner"></span>
-                    Create Account
-                </button>
+                        // Mount the user button if not already mounted
+                        if (!userButton.hasChildNodes()) {
+                            Clerk.mountUserButton(userButton, {
+                                appearance: window.ClerkConfig.appearance,
+                                ...window.ClerkConfig.userButton
+                            });
+                        }
 
-                <div class="auth-divider">
-                    <span class="divider-text">or sign up with</span>
-                </div>
+                        console.log('✅ User signed in:', Clerk.user.firstName || Clerk.user.emailAddresses[0].emailAddress);
+                    } else {
+                        // User is not signed in
+                        signInButton.style.display = 'inline-block';
+                        signUpButton.style.display = 'inline-block';
+                        userButton.style.display = 'none';
 
-                <button type="button" class="google-signin" onclick="professionalUI.handleGoogleSignIn()">
-                    <svg width="20" height="20" viewBox="0 0 24 24">
-                        <path fill="#4285f4"
-                            d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                        <path fill="#34a853"
-                            d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                        <path fill="#fbbc05"
-                            d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-                        <path fill="#ea4335"
-                            d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-                    </svg>
-                    Continue with Google
-                </button>
-            </form>
+                        // Create custom sign-in button
+                        if (!signInButton.hasChildNodes()) {
+                            const loginBtn = document.createElement('button');
+                            loginBtn.className = 'login-btn';
+                            loginBtn.textContent = 'Login';
+                            loginBtn.onclick = () => {
+                                Clerk.openSignIn({
+                                    appearance: window.ClerkConfig.appearance,
+                                    ...window.ClerkConfig.signIn
+                                });
+                            };
+                            signInButton.appendChild(loginBtn);
+                        }
 
-            <div class="auth-switch">
-                Already have an account?
-                <a href="#" data-modal="login-modal"
-                    onclick="professionalUI.closeModal(); setTimeout(() => professionalUI.openModal('login-modal'), 300);">
-                    Sign in
-                </a>
-            </div>
-        </div>
-    </div>
+                        // Create custom sign-up button
+                        if (!signUpButton.hasChildNodes()) {
+                            const signupBtn = document.createElement('button');
+                            signupBtn.className = 'signup-btn';
+                            signupBtn.textContent = 'Sign Up';
+                            signupBtn.onclick = () => {
+                                Clerk.openSignUp({
+                                    appearance: window.ClerkConfig.appearance,
+                                    ...window.ClerkConfig.signUp
+                                });
+                            };
+                            signUpButton.appendChild(signupBtn);
+                        }
 
-    <!-- =============================================
-         PROFESSIONAL SCRIPTS
-         ============================================= -->
-    <!-- Google Configuration -->
-    <script src="js/google-config.js"></script>
+                        console.log('👤 User not signed in');
+                    }
+                }
 
-    <!-- Professional Authentication Service -->
-    <script src="js/professional-auth.js"></script>
+                // Listen for authentication state changes
+                Clerk.addListener((resources) => {
+                    updateAuthUI();
+                });
 
-    <!-- Professional UI -->
-    <script src="js/professional-ui.js"></script>
+                // Initial UI update
+                updateAuthUI();
 
-    <!-- Enhanced Mobile Styles -->
-    <style>
-        /* Mobile Menu Styles */
-        .mobile-nav-menu {
-            position: fixed;
-            top: 0;
-            left: -100%;
-            width: min(85vw, 350px);
-            height: 100vh;
-            background: linear-gradient(135deg, rgba(0, 0, 0, 0.98) 0%, rgba(26, 26, 26, 0.98) 100%);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            z-index: var(--z-modal);
-            transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            display: flex;
-            flex-direction: column;
-            border-right: 1px solid var(--border-accent);
-            box-shadow: 4px 0 30px rgba(0, 0, 0, 0.6);
-        }
+                console.log('🚀 Clerk authentication initialized successfully');
 
-        .mobile-nav-menu.active {
-            left: 0;
-        }
-
-        .mobile-nav-header {
-            padding: 2rem 1.5rem;
-            background: rgba(231, 76, 60, 0.1);
-            border-bottom: 1px solid var(--border-accent);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .mobile-logo {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-weight: var(--font-weight-bold);
-            color: var(--text-primary);
-        }
-
-        .mobile-nav-close {
-            background: transparent;
-            border: none;
-            color: var(--text-secondary);
-            font-size: 1.2rem;
-            cursor: pointer;
-            padding: 0.5rem;
-            border-radius: var(--radius-sm);
-            transition: all var(--transition-normal);
-        }
-
-        .mobile-nav-close:hover {
-            color: var(--secondary-color);
-            background: rgba(231, 76, 60, 0.1);
-        }
-
-        .mobile-nav-links {
-            flex: 1;
-            padding: 1rem 0;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .mobile-nav-link {
-            padding: 1rem 1.5rem;
-            color: var(--text-primary);
-            text-decoration: none;
-            font-weight: var(--font-weight-medium);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            transition: all var(--transition-normal);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .mobile-nav-link:hover {
-            background: rgba(231, 76, 60, 0.1);
-            color: var(--secondary-color);
-            padding-left: 2rem;
-        }
-
-        .mobile-auth-section {
-            padding: 1.5rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            display: flex;
-            flex-direction: column;
-            gap: 0.8rem;
-        }
-
-        /* Features Grid */
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin-top: 3rem;
-        }
-
-        .feature-card {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid var(--border-primary);
-            border-radius: var(--radius-lg);
-            padding: 2rem;
-            text-align: center;
-            transition: all var(--transition-smooth);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .feature-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, rgba(231, 76, 60, 0.05) 0%, transparent 50%);
-            opacity: 0;
-            transition: opacity var(--transition-normal);
-        }
-
-        .feature-card:hover::before {
-            opacity: 1;
-        }
-
-        .feature-card:hover {
-            transform: translateY(-8px);
-            border-color: var(--border-accent);
-            box-shadow: var(--shadow-glow);
-        }
-
-        .feature-icon {
-            width: 80px;
-            height: 80px;
-            margin: 0 auto 1.5rem;
-            background: var(--gradient-primary);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            color: white;
-            box-shadow: var(--shadow-md);
-            transition: all var(--transition-normal);
-            position: relative;
-            z-index: 2;
-        }
-
-        .feature-card:hover .feature-icon {
-            transform: scale(1.1) rotateY(15deg);
-            box-shadow: var(--shadow-glow);
-        }
-
-        .feature-title {
-            font-size: 1.3rem;
-            font-weight: var(--font-weight-bold);
-            color: var(--text-primary);
-            margin-bottom: 1rem;
-            position: relative;
-            z-index: 2;
-        }
-
-        .feature-description {
-            color: var(--text-secondary);
-            line-height: 1.6;
-            position: relative;
-            z-index: 2;
-        }
-
-        .feature-highlight {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            z-index: 3;
-        }
-
-        .highlight-text {
-            background: var(--gradient-primary);
-            color: white;
-            padding: 0.25rem 0.75rem;
-            border-radius: var(--radius-full);
-            font-size: 0.7rem;
-            font-weight: var(--font-weight-bold);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .section-header {
-            text-align: center;
-            margin-bottom: 3rem;
-        }
-
-        .section-title {
-            font-size: clamp(2rem, 5vw, 3rem);
-            font-weight: var(--font-weight-black);
-            margin-bottom: 1rem;
-        }
-
-        .section-subtitle {
-            font-size: 1.1rem;
-            color: var(--text-secondary);
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        /* Responsive adjustments */
-        @media (max-width: 968px) {
-            .mobile-menu-toggle {
-                display: flex;
+            } catch (error) {
+                console.error('❌ Error initializing Clerk:', error);
+                console.log('💡 Make sure you have:');
+                console.log('- Updated your publishable key in js/clerk-config.js');
+                console.log('- Updated the script src with your Frontend API URL');
+                console.log('- Created a Clerk application at https://clerk.com');
             }
+        });
+    </script>
 
-            .modern-nav-links,
-            .auth-buttons {
-                display: none;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .features-grid {
-                grid-template-columns: 1fr;
-                gap: 1.5rem;
-            }
-
-            .feature-card {
-                padding: 1.5rem;
-            }
-
-            .feature-icon {
-                width: 60px;
-                height: 60px;
-                font-size: 1.5rem;
-            }
-        }
-    </style>
+    <!-- UI interactions script (keeping the mobile menu functionality) -->
+    <script src="js/ui-interactions.js"></script>
 </body>
 
 </html>
