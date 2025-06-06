@@ -72,11 +72,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     try {
         console.log('Workout Logger: Starting initialization...');
 
-        // Set default user info for UI
-        const userName = document.getElementById('user-name');
-        if (userName) {
-            userName.textContent = 'User';
-        }
+        // Set default user info for UI (using avatar instead of text now)
 
         // Set default weight unit preference
         const weightUnitSelect = document.getElementById('weightUnit');
@@ -889,7 +885,7 @@ function initWorkoutLogger() {
     // Default icon if no specific mapping exists
     const defaultDayIcon = 'fa-dumbbell';
 
-    // Handle split card selection
+    // Handle split card selection (main workout splits)
     splitCards.forEach(card => {
         card.addEventListener('click', () => {
             const splitType = card.dataset.split;
@@ -904,6 +900,31 @@ function initWorkoutLogger() {
             // Add active class to selected card
             card.classList.add('active');
 
+            // Generate day cards based on selected split
+            generateDayCards(splitType);
+            splitSelectionStep.style.display = 'none';
+            daySelectionStep.style.display = 'block';
+
+            console.log('Split selected:', splitType);
+        });
+    });
+
+    // Handle custom option buttons
+    const customOptionBtns = document.querySelectorAll('.custom-option-btn');
+    customOptionBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            const splitType = btn.dataset.split;
+            selectedSplitType = splitType; // Store the selected split type
+
+            // Update hidden select for compatibility with existing code
+            workoutSplitSelect.value = splitType;
+
+            // Remove active class from all buttons
+            customOptionBtns.forEach(b => b.classList.remove('active'));
+
+            // Add active class to selected button
+            btn.classList.add('active');
+
             // Handle different split types
             if (splitType === 'createCustom') {
                 // Show custom split creation step
@@ -915,14 +936,9 @@ function initWorkoutLogger() {
                 generateDayCards(splitType);
                 splitSelectionStep.style.display = 'none';
                 daySelectionStep.style.display = 'block';
-            } else {
-                // Generate day cards based on selected split
-                generateDayCards(splitType);
-                splitSelectionStep.style.display = 'none';
-                daySelectionStep.style.display = 'block';
             }
 
-            console.log('Split selected:', splitType);
+            console.log('Custom option selected:', splitType);
         });
     });
 
@@ -930,6 +946,12 @@ function initWorkoutLogger() {
     backToSplitsBtn.addEventListener('click', () => {
         splitSelectionStep.style.display = 'block';
         daySelectionStep.style.display = 'none';
+
+        // Hide template actions when going back
+        const templateActionsAfterSelection = document.getElementById('templateActionsAfterSelection');
+        if (templateActionsAfterSelection) {
+            templateActionsAfterSelection.style.display = 'none';
+        }
 
         // Don't clear the selected split when going back
         // Just clear the day selection
@@ -1176,6 +1198,12 @@ function initWorkoutLogger() {
             // Update hidden select for compatibility with existing code
             workoutDaySelect.value = dayKey;
 
+            // Show template actions after day selection
+            const templateActionsAfterSelection = document.getElementById('templateActionsAfterSelection');
+            if (templateActionsAfterSelection) {
+                templateActionsAfterSelection.style.display = 'flex';
+            }
+
             // Log the values to verify they're set correctly
             console.log('Selected split:', selectedSplitType);
             console.log('Selected day:', dayKey);
@@ -1289,6 +1317,12 @@ function initWorkoutLogger() {
 
                 // Update hidden select for compatibility
                 workoutDaySelect.value = `${splitName}_${dayKey}`;
+
+                // Show template actions after day selection
+                const templateActionsAfterSelection = document.getElementById('templateActionsAfterSelection');
+                if (templateActionsAfterSelection) {
+                    templateActionsAfterSelection.style.display = 'flex';
+                }
             });
 
             workoutDayGrid.appendChild(dayCard);

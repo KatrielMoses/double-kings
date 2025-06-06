@@ -62,7 +62,9 @@
 
             <div class="auth-section">
                 <div class="user-profile" id="userProfile">
-                    <span id="user-name">User</span>
+                    <div class="user-avatar">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
                     <i class="fas fa-chevron-down"></i>
                     <div class="user-dropdown">
                         <a href="workout-logger.html" class="dropdown-item">
@@ -103,7 +105,9 @@
                         <div class="step-header">
                             <h3 class="step-title">Select Workout Split</h3>
                         </div>
-                        <div class="split-grid">
+
+                        <!-- Main workout split cards in a row -->
+                        <div class="main-split-grid">
                             <div class="split-card" data-split="pushPullLegs">
                                 <div class="split-icon">
                                     <i class="fas fa-dumbbell"></i>
@@ -122,18 +126,18 @@
                                 </div>
                                 <div class="split-name">Full Body</div>
                             </div>
-                            <div class="split-card" data-split="createCustom">
-                                <div class="split-icon">
-                                    <i class="fas fa-plus-circle"></i>
-                                </div>
-                                <div class="split-name">Create Custom Split</div>
-                            </div>
-                            <div class="split-card" data-split="custom">
-                                <div class="split-icon">
-                                    <i class="fas fa-star"></i>
-                                </div>
-                                <div class="split-name">Saved Templates</div>
-                            </div>
+                        </div>
+
+                        <!-- Custom options as buttons in second row -->
+                        <div class="custom-options-row">
+                            <button class="custom-option-btn" data-split="createCustom">
+                                <i class="fas fa-plus-circle"></i>
+                                Create Custom Split
+                            </button>
+                            <button class="custom-option-btn" data-split="custom">
+                                <i class="fas fa-star"></i>
+                                Saved Templates
+                            </button>
                         </div>
                     </div>
 
@@ -145,6 +149,13 @@
                         </div>
                         <div class="day-grid" id="workoutDayGrid">
                             <!-- Day cards will be added dynamically -->
+                        </div>
+
+                        <!-- Template actions shown only after selecting split and day -->
+                        <div class="template-actions" id="templateActionsAfterSelection" style="display: none;">
+                            <button type="button" id="loadTemplate" class="secondary-btn">Load Template</button>
+                            <button type="button" id="saveAsTemplate" class="secondary-btn">Save Current as
+                                Template</button>
                         </div>
                     </div>
 
@@ -230,12 +241,6 @@
                             <option value="">Choose a Day</option>
                         </select>
                     </div>
-
-                    <div class="template-actions">
-                        <button type="button" id="loadTemplate" class="secondary-btn">Load Template</button>
-                        <button type="button" id="saveAsTemplate" class="secondary-btn">Save Current as
-                            Template</button>
-                    </div>
                 </div>
 
                 <!-- Exercise List Column (initially hidden) -->
@@ -279,10 +284,19 @@
                 <!-- Remove exercise details section since we're doing inline logging -->
                 <div id="exerciseDetailsSection" class="form-section" style="display: none;"></div>
 
+                <!-- Collapsible Workout History Section -->
                 <div class="workout-history">
-                    <h2 class="section-title">Workout History</h2>
-                    <div id="workoutList" class="workout-list">
-                        <!-- Workout entries will be added here -->
+                    <div class="workout-history-header" id="workoutHistoryHeader">
+                        <h2 class="section-title">Workout History</h2>
+                        <button class="history-toggle-btn" id="historyToggleBtn">
+                            <i class="fas fa-chevron-down"></i>
+                            <span>Show History</span>
+                        </button>
+                    </div>
+                    <div id="workoutHistoryContent" class="workout-history-content collapsed">
+                        <div id="workoutList" class="workout-list">
+                            <!-- Workout entries will be added here -->
+                        </div>
                     </div>
                 </div>
             </div>
@@ -297,13 +311,7 @@
             console.log('✅ Workout Logger: Setting up page functionality');
 
             // Always set up basic functionality
-            const userName = document.getElementById('user-name');
             const logoutBtn = document.getElementById('logoutBtn');
-
-            // Set default user name
-            if (userName) {
-                userName.textContent = 'User';
-            }
 
             // Set up logout/home button
             if (logoutBtn) {
@@ -313,7 +321,65 @@
                 });
             }
 
+            // Set up collapsible workout history
+            setupCollapsibleHistory();
+
+            // Set up custom option buttons
+            setupCustomOptionButtons();
+
             console.log('✅ Workout Logger: Page setup complete - ready to use!');
+        }
+
+        function setupCollapsibleHistory() {
+            const historyToggleBtn = document.getElementById('historyToggleBtn');
+            const historyContent = document.getElementById('workoutHistoryContent');
+
+            if (historyToggleBtn && historyContent) {
+                historyToggleBtn.addEventListener('click', () => {
+                    const isExpanded = historyContent.classList.contains('expanded');
+
+                    if (isExpanded) {
+                        // Collapse
+                        historyContent.classList.remove('expanded');
+                        historyContent.classList.add('collapsed');
+                        historyToggleBtn.classList.remove('expanded');
+                        historyToggleBtn.querySelector('span').textContent = 'Show History';
+                    } else {
+                        // Expand
+                        historyContent.classList.remove('collapsed');
+                        historyContent.classList.add('expanded');
+                        historyToggleBtn.classList.add('expanded');
+                        historyToggleBtn.querySelector('span').textContent = 'Hide History';
+                    }
+                });
+            }
+        }
+
+        function setupCustomOptionButtons() {
+            // Add event listeners to custom option buttons
+            const customOptionBtns = document.querySelectorAll('.custom-option-btn');
+
+            customOptionBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const splitType = btn.dataset.split;
+
+                    // Remove active class from all custom buttons
+                    customOptionBtns.forEach(b => b.classList.remove('active'));
+
+                    // Add active class to clicked button
+                    btn.classList.add('active');
+
+                    // Trigger the same logic as split cards
+                    // This will be handled by the existing workout-logger.js
+                    console.log('Custom option selected:', splitType);
+
+                    // Create a synthetic event to trigger existing logic
+                    const syntheticEvent = new CustomEvent('splitSelected', {
+                        detail: { splitType }
+                    });
+                    document.dispatchEvent(syntheticEvent);
+                });
+            });
         }
 
         // Initialize when page loads

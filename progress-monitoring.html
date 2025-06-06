@@ -65,7 +65,9 @@
 
             <div class="auth-section">
                 <div class="user-profile" id="userProfile">
-                    <span id="user-name">User</span>
+                    <div class="user-avatar">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
                     <i class="fas fa-chevron-down"></i>
                     <div class="user-dropdown">
                         <a href="workout-logger.html" class="dropdown-item">
@@ -215,13 +217,7 @@
             console.log('✅ Progress Monitoring: Setting up page functionality');
 
             // Always set up basic functionality
-            const userName = document.getElementById('user-name');
             const logoutBtn = document.getElementById('logoutBtn');
-
-            // Set default user name
-            if (userName) {
-                userName.textContent = 'User';
-            }
 
             // Set up logout/home button
             if (logoutBtn) {
