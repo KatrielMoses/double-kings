@@ -14,7 +14,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600&display=swap"
         rel="stylesheet">
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
     <!-- Chart.js with required date-time adapter -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
@@ -29,14 +29,40 @@
                     <span class="crown-right"><i class="fas fa-crown"></i></span>
                 </div>
                 <span class="logo-text-bottom">Double Kings</span>
-                <span class="logo-text-sub">FITNESS</span>
             </div>
         </div>
-        <div class="nav-links">
+
+        <!-- Mobile Menu Toggle -->
+        <div class="mobile-menu-toggle" id="mobileMenuToggle">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+
+        <!-- Mobile Menu Overlay -->
+        <div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>
+
+        <div class="nav-links" id="navLinks">
+            <!-- Mobile Menu Header -->
+            <div class="mobile-nav-header">
+                <button class="mobile-nav-close" id="mobileNavClose">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div class="mobile-nav-logo">
+                    <div class="crown-container">
+                        <span class="crown-left"><i class="fas fa-crown"></i></span>
+                        <span class="crown-right"><i class="fas fa-crown"></i></span>
+                    </div>
+                    <span class="mobile-nav-title">Double Kings</span>
+                    <span class="mobile-nav-subtitle">FITNESS</span>
+                </div>
+            </div>
+
             <a href="index.html" class="nav-link">Home</a>
             <a href="workout-logger.html" class="nav-link">Workout Logger</a>
             <a href="progress-monitoring.html" class="nav-link active">Progress Monitoring</a>
             <a href="goal-setting.html" class="nav-link">Goal Setting</a>
+
             <div class="auth-section">
                 <div class="user-profile" id="userProfile">
                     <span id="user-name">User</span>
@@ -180,6 +206,37 @@
             </div>
         </div>
     </main>
+
+    <!-- Simple Page Setup - No Authentication Required -->
+    <script>
+        console.log('✅ Progress Monitoring: Initializing page...');
+
+        function setupProgressMonitoringPage() {
+            console.log('✅ Progress Monitoring: Setting up page functionality');
+
+            // Always set up basic functionality
+            const userName = document.getElementById('user-name');
+            const logoutBtn = document.getElementById('logoutBtn');
+
+            // Set default user name
+            if (userName) {
+                userName.textContent = 'User';
+            }
+
+            // Set up logout/home button
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', () => {
+                    console.log('✅ Progress Monitoring: Returning to home page');
+                    window.location.href = 'index.html';
+                });
+            }
+
+            console.log('✅ Progress Monitoring: Page setup complete - ready to use!');
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', setupProgressMonitoringPage);
+    </script>
 
     <script type="module" src="js/main.js"></script>
     <script type="module" src="js/progress-monitoring.js"></script>

@@ -11,6 +11,163 @@
     <link rel="stylesheet" href="styles/home.css">
     <link rel="stylesheet" href="styles/responsive-fixes.css">
     <link rel="stylesheet" href="styles/notifications.css">
+
+    <!-- Inline styles for CTA section -->
+    <style>
+        .cta-section {
+            padding: 80px 0;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="%23e74c3c" stroke-width="0.5" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+            opacity: 0.1;
+        }
+
+        .cta-content {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .cta-subtitle {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 60px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .cta-features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 40px;
+            margin-bottom: 60px;
+            padding: 0 20px;
+        }
+
+        .cta-feature {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 40px 30px;
+            border-radius: 16px;
+            border: 2px solid rgba(231, 76, 60, 0.2);
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .cta-feature:hover {
+            transform: translateY(-8px);
+            border-color: rgba(231, 76, 60, 0.5);
+            box-shadow: 0 20px 40px rgba(231, 76, 60, 0.2);
+        }
+
+        .cta-feature .feature-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 2rem;
+            color: white;
+            box-shadow: 0 8px 25px rgba(231, 76, 60, 0.3);
+        }
+
+        .cta-feature h3 {
+            color: #ffffff;
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .cta-feature p {
+            color: rgba(255, 255, 255, 0.7);
+            line-height: 1.6;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .cta-btn {
+            padding: 18px 36px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 200px;
+            justify-content: center;
+        }
+
+        .cta-btn.primary {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            box-shadow: 0 8px 25px rgba(231, 76, 60, 0.3);
+        }
+
+        .cta-btn.primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(231, 76, 60, 0.4);
+        }
+
+        .cta-btn.secondary {
+            background: transparent;
+            color: #e74c3c;
+            border: 2px solid #e74c3c;
+        }
+
+        .cta-btn.secondary:hover {
+            background: #e74c3c;
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(231, 76, 60, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .cta-section {
+                padding: 60px 0;
+            }
+
+            .cta-features {
+                grid-template-columns: 1fr;
+                gap: 30px;
+                padding: 0 10px;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .cta-btn {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+    </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -72,9 +229,12 @@
                 </div>
 
                 <a href="index.html" class="nav-link active">Home</a>
-                <a href="workout-logger.html" class="nav-link" id="workout-link">Workout Logger</a>
-                <a href="progress-monitoring.html" class="nav-link" id="progress-link">Progress Monitoring</a>
-                <a href="goal-setting.html" class="nav-link" id="goals-link">Goal Setting</a>
+                <!-- Feature navigation links - shown only when authenticated -->
+                <div id="feature-nav-links" style="display: none;">
+                    <a href="workout-logger.html" class="nav-link" id="workout-link">Workout Logger</a>
+                    <a href="progress-monitoring.html" class="nav-link" id="progress-link">Progress Monitoring</a>
+                    <a href="goal-setting.html" class="nav-link" id="goals-link">Goal Setting</a>
+                </div>
 
                 <!-- Clerk Authentication Section -->
                 <div class="auth-section" id="auth-section">
@@ -95,8 +255,8 @@
         </main>
     </div>
 
-    <!-- Features Section -->
-    <section class="classes-section">
+    <!-- Features Section - shown only when authenticated -->
+    <section class="classes-section" id="feature-cards-section" style="display: none;">
         <div class="container">
             <h2 class="section-title">YOUR FITNESS JOURNEY</h2>
 
@@ -129,6 +289,50 @@
                             <p>Set and achieve your fitness goals</p>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sign-in Call-to-Action Section - shown only when NOT authenticated -->
+    <section class="cta-section" id="signin-cta-section" style="display: block;">
+        <div class="container">
+            <div class="cta-content">
+                <h2 class="section-title">Ready to Transform Your Fitness Journey?</h2>
+                <p class="cta-subtitle">Join thousands of fitness enthusiasts who are already tracking their progress
+                    and achieving their goals.</p>
+
+                <div class="cta-features">
+                    <div class="cta-feature">
+                        <div class="feature-icon">
+                            <i class="fas fa-dumbbell"></i>
+                        </div>
+                        <h3>Track Workouts</h3>
+                        <p>Log your sets, reps, and weights with our intuitive workout logger</p>
+                    </div>
+                    <div class="cta-feature">
+                        <div class="feature-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h3>Monitor Progress</h3>
+                        <p>Visualize your strength gains and celebrate your achievements</p>
+                    </div>
+                    <div class="cta-feature">
+                        <div class="feature-icon">
+                            <i class="fas fa-bullseye"></i>
+                        </div>
+                        <h3>Set Goals</h3>
+                        <p>Define your targets and track your journey to success</p>
+                    </div>
+                </div>
+
+                <div class="cta-buttons">
+                    <button class="cta-btn primary" id="cta-signup-btn">
+                        <i class="fas fa-rocket"></i> Start Your Journey
+                    </button>
+                    <button class="cta-btn secondary" id="cta-signin-btn">
+                        <i class="fas fa-sign-in-alt"></i> Sign In
+                    </button>
                 </div>
             </div>
         </div>
@@ -210,11 +414,21 @@
                     const signUpButton = document.getElementById('clerk-sign-up-button');
                     const userButton = document.getElementById('clerk-user-button');
 
+                    // Get elements for conditional display
+                    const featureNavLinks = document.getElementById('feature-nav-links');
+                    const featureCardsSection = document.getElementById('feature-cards-section');
+                    const signinCtaSection = document.getElementById('signin-cta-section');
+
                     if (Clerk.user) {
                         // User is signed in
                         signInButton.style.display = 'none';
                         signUpButton.style.display = 'none';
                         userButton.style.display = 'block';
+
+                        // Show feature navigation and cards
+                        if (featureNavLinks) featureNavLinks.style.display = 'flex';
+                        if (featureCardsSection) featureCardsSection.style.display = 'block';
+                        if (signinCtaSection) signinCtaSection.style.display = 'none';
 
                         // Mount the user button if not already mounted
                         if (!userButton.hasChildNodes()) {
@@ -224,12 +438,20 @@
                             });
                         }
 
-                        console.log('✅ User signed in:', Clerk.user.firstName || Clerk.user.emailAddresses[0].emailAddress);
+                        const userEmail = Clerk.user.emailAddresses?.[0]?.emailAddress || 'Unknown';
+                        console.log('✅ User signed in:', Clerk.user.firstName || userEmail);
+                        console.log('📋 Session available:', !!Clerk.session);
+                        console.log('👤 User ID:', Clerk.user.id);
                     } else {
                         // User is not signed in
                         signInButton.style.display = 'inline-block';
                         signUpButton.style.display = 'inline-block';
                         userButton.style.display = 'none';
+
+                        // Hide feature navigation and cards, show CTA
+                        if (featureNavLinks) featureNavLinks.style.display = 'none';
+                        if (featureCardsSection) featureCardsSection.style.display = 'none';
+                        if (signinCtaSection) signinCtaSection.style.display = 'block';
 
                         // Create custom sign-in button
                         if (!signInButton.hasChildNodes()) {
@@ -259,17 +481,73 @@
                             signUpButton.appendChild(signupBtn);
                         }
 
-                        console.log('👤 User not signed in');
+                        console.log('👤 User not signed in - showing sign up CTA');
+                    }
+                }
+
+                // Add event listeners for CTA buttons
+                function setupCTAButtons() {
+                    const ctaSignupBtn = document.getElementById('cta-signup-btn');
+                    const ctaSigninBtn = document.getElementById('cta-signin-btn');
+
+                    if (ctaSignupBtn) {
+                        ctaSignupBtn.addEventListener('click', () => {
+                            Clerk.openSignUp({
+                                appearance: window.ClerkConfig.appearance,
+                                ...window.ClerkConfig.signUp
+                            });
+                        });
+                    }
+
+                    if (ctaSigninBtn) {
+                        ctaSigninBtn.addEventListener('click', () => {
+                            Clerk.openSignIn({
+                                appearance: window.ClerkConfig.appearance,
+                                ...window.ClerkConfig.signIn
+                            });
+                        });
                     }
                 }
 
                 // Listen for authentication state changes
                 Clerk.addListener((resources) => {
+                    console.log('🔄 Index: Clerk state changed:', resources);
                     updateAuthUI();
                 });
 
                 // Initial UI update
                 updateAuthUI();
+
+                // Add click handlers for feature cards - freely accessible
+                function addFeatureCardHandlers() {
+                    const featureCards = document.querySelectorAll('.class-category');
+
+                    featureCards.forEach((card, index) => {
+                        card.style.cursor = 'pointer';
+                        card.addEventListener('click', () => {
+                            console.log('🚀 Navigating to feature page:', index);
+
+                            // Navigate to the appropriate page (no authentication required)
+                            switch (index) {
+                                case 0: // Workout Logger
+                                    window.location.href = 'workout-logger.html';
+                                    break;
+                                case 1: // Progress Monitoring
+                                    window.location.href = 'progress-monitoring.html';
+                                    break;
+                                case 2: // Goal Setting
+                                    window.location.href = 'goal-setting.html';
+                                    break;
+                            }
+                        });
+                    });
+                }
+
+                // Navigation links are now freely accessible - no authentication required
+
+                // Initialize handlers
+                addFeatureCardHandlers();
+                setupCTAButtons();
 
                 console.log('🚀 Clerk authentication initialized successfully');
 

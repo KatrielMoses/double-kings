@@ -1,8 +1,6 @@
-import { auth, db, supabase } from './supabase-config.js';
 import { workoutTemplates, loadWorkoutTemplate, saveCustomTemplate, getCustomTemplates, loadCustomTemplate } from './workout-templates.js';
 
 // Global variables
-let currentUser = null;
 let workoutList;
 
 // Get the workout list element or create one if it doesn't exist
@@ -69,50 +67,29 @@ function getLastExerciseData(exerciseName) {
     }
 }
 
-// Check if user is logged in and initialize
+// Initialize workout logger without authentication
 document.addEventListener('DOMContentLoaded', async () => {
     try {
-        console.log('Workout Logger: Starting authentication check...');
+        console.log('Workout Logger: Starting initialization...');
 
-        // Add a small delay to ensure Supabase is fully initialized
-        await new Promise(resolve => setTimeout(resolve, 100));
-
-        currentUser = await auth.getCurrentUser();
-        console.log('Workout Logger: Current user:', currentUser);
-
-        if (!currentUser) {
-            console.log('Workout Logger: No user found, redirecting to login');
-            alert('Please log in to access the Workout Logger');
-            window.location.href = 'index.html';
-            return;
-        }
-
-        console.log('Workout Logger: User authenticated, proceeding...');
-
-        // Get user profile for preferences
-        const userProfile = await db.getUserProfile(currentUser.id);
-        console.log('Workout Logger: User profile:', userProfile);
-
-        // Update UI with user info
+        // Set default user info for UI
         const userName = document.getElementById('user-name');
-        if (userName && userProfile?.name) {
-            userName.textContent = userProfile.name;
+        if (userName) {
+            userName.textContent = 'User';
         }
 
-        // Set weight unit preference
+        // Set default weight unit preference
         const weightUnitSelect = document.getElementById('weightUnit');
-        if (weightUnitSelect && userProfile?.preferred_weight_unit) {
-            weightUnitSelect.value = userProfile.preferred_weight_unit;
-        } else if (weightUnitSelect) {
-            // Set default to kg if no preference
-            weightUnitSelect.value = 'kg';
+        if (weightUnitSelect) {
+            // Get preference from localStorage or set default to kg
+            const savedWeightUnit = localStorage.getItem('preferredWeightUnit') || 'kg';
+            weightUnitSelect.value = savedWeightUnit;
         }
 
-        // Add logout functionality
+        // Add logout/home functionality
         const logoutBtn = document.getElementById('logoutBtn');
         if (logoutBtn) {
-            logoutBtn.addEventListener('click', async () => {
-                await auth.signOut();
+            logoutBtn.addEventListener('click', () => {
                 window.location.href = 'index.html';
             });
         }
@@ -121,15 +98,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Continue with workout logger initialization
         initWorkoutLogger();
 
-        // Load existing workouts
+        // Load existing workouts from local storage
         await loadWorkouts();
 
         console.log('Workout Logger: Initialization complete');
     } catch (error) {
         console.error('Error initializing workout logger:', error);
         alert('Error loading workout logger. Please try refreshing the page.');
-        // Don't redirect immediately, give user a chance to refresh
-        // window.location.href = 'index.html';
     }
 });
 
@@ -449,12 +424,7 @@ function formatDateForInput(date) {
 // Load workouts function - moved to global scope
 async function loadWorkouts() {
     try {
-        if (!currentUser) {
-            console.log('No user logged in, skipping workout load');
-            return false;
-        }
-
-        const workouts = await db.getWorkouts(currentUser.id);
+        const workouts = JSON.parse(localStorage.getItem('savedWorkouts')) || [];
         const wkList = getWorkoutList();
 
         if (!wkList) {
@@ -465,12 +435,12 @@ async function loadWorkouts() {
         // Clear existing entries
         wkList.innerHTML = '';
 
-        console.log(`Loading ${workouts.length} workouts from Supabase`);
+        console.log(`Loading ${workouts.length} workouts from local storage`);
 
-        workouts.forEach((workout) => {
+        workouts.forEach((workout, index) => {
             const workoutEntry = document.createElement('div');
             workoutEntry.className = 'workout-entry';
-            workoutEntry.dataset.workoutId = workout.id;
+            workoutEntry.dataset.workoutIndex = index;
 
             // Format sets display
             const setsDisplay = workout.sets.map(set =>
@@ -492,14 +462,15 @@ async function loadWorkouts() {
 
             // Add delete functionality
             const deleteBtn = workoutEntry.querySelector('.delete-btn');
-            deleteBtn.addEventListener('click', async () => {
+            deleteBtn.addEventListener('click', () => {
                 if (confirm('Are you sure you want to delete this workout?')) {
-                    const result = await db.deleteWorkout(workout.id);
-                    if (result.success) {
-                        workoutEntry.remove();
-                    } else {
-                        alert('Error deleting workout: ' + result.error);
-                    }
+                    // Remove from local storage
+                    const savedWorkouts = JSON.parse(localStorage.getItem('savedWorkouts')) || [];
+                    savedWorkouts.splice(index, 1);
+                    localStorage.setItem('savedWorkouts', JSON.stringify(savedWorkouts));
+
+                    // Remove from UI
+                    workoutEntry.remove();
                 }
             });
 
@@ -1692,10 +1663,8 @@ function initWorkoutLogger() {
                 return;
             }
 
-            // Save user preference for weight unit
-            if (currentUser) {
-                await db.updateUserProfile(currentUser.id, { preferred_weight_unit: weightUnit });
-            }
+            // Save user preference for weight unit to localStorage
+            localStorage.setItem('preferredWeightUnit', weightUnit);
 
             // Prepare exercise data for Supabase
             const exerciseData = {
@@ -1897,32 +1866,33 @@ function initWorkoutLogger() {
         window.currentTemplate.exercises = newExercises;
     }
 
-    // Save workout to Supabase
+    // Save workout to local storage
     async function saveWorkout(exerciseData) {
         try {
-            if (!currentUser) {
-                throw new Error('User not authenticated');
-            }
-
             const workoutData = {
-                user_id: currentUser.id,
+                id: Date.now() + '_' + Math.random().toString(36).substr(2, 9),
                 exercise_name: exerciseData.exercise,
                 muscle_group: exerciseData.muscleGroup,
                 sets: exerciseData.sets,
                 weight_unit: exerciseData.weightUnit || 'kg',
-                workout_date: exerciseData.date || new Date().toISOString().split('T')[0]
+                workout_date: exerciseData.date || new Date().toISOString().split('T')[0],
+                created_at: new Date().toISOString()
             };
 
-            const result = await db.saveWorkout(workoutData);
+            // Get existing workouts from local storage
+            const savedWorkouts = JSON.parse(localStorage.getItem('savedWorkouts')) || [];
 
-            if (result.success) {
-                console.log('Workout saved successfully:', result.data);
-                // Refresh the workout history
-                await loadWorkouts();
-                return true;
-            } else {
-                throw new Error(result.error);
-            }
+            // Add new workout
+            savedWorkouts.push(workoutData);
+
+            // Save back to local storage
+            localStorage.setItem('savedWorkouts', JSON.stringify(savedWorkouts));
+
+            console.log('Workout saved successfully:', workoutData);
+
+            // Refresh the workout history
+            await loadWorkouts();
+            return true;
         } catch (error) {
             console.error('Error saving workout:', error);
             alert('Error saving workout: ' + error.message);

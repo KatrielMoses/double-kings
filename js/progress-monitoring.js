@@ -1,46 +1,35 @@
-import { auth, db, supabase } from './supabase-config.js';
-
-// Global variables
-let currentUser = null;
-
-// Progress Monitoring
+// Progress Monitoring - No authentication required
 document.addEventListener('DOMContentLoaded', async () => {
     try {
-        // Check authentication with Supabase
-        currentUser = await auth.getCurrentUser();
+        console.log('Progress Monitoring: Starting initialization...');
 
-        if (!currentUser) {
-            alert('Please log in to access Progress Monitoring');
-            window.location.href = 'index.html';
-            return;
-        }
-
-        // Get user profile for preferences
-        const userProfile = await db.getUserProfile(currentUser.id);
+        // Set default user info for UI
         const userName = document.getElementById('user-name');
         const logoutBtn = document.getElementById('logoutBtn');
 
         // Update user name
-        if (userName && userProfile?.name) {
-            userName.textContent = userProfile.name;
+        if (userName) {
+            userName.textContent = 'User';
         }
 
-        // Add logout functionality
+        // Add home functionality
         if (logoutBtn) {
-            logoutBtn.addEventListener('click', async (e) => {
+            logoutBtn.addEventListener('click', (e) => {
                 e.preventDefault();
-                await auth.signOut();
                 window.location.href = 'index.html';
             });
         }
 
-        // Initialize the page after authentication is confirmed
-        initializeProgressMonitoring(userProfile);
+        // Initialize the page with default preferences
+        const defaultUserProfile = {
+            preferred_weight_unit: localStorage.getItem('preferredWeightUnit') || 'kg'
+        };
+
+        initializeProgressMonitoring(defaultUserProfile);
 
     } catch (error) {
         console.error('Error initializing progress monitoring:', error);
-        alert('Please log in to access Progress Monitoring');
-        window.location.href = 'index.html';
+        alert('Error loading progress monitoring. Please try refreshing the page.');
     }
 });
 
@@ -177,39 +166,39 @@ function initializeProgressMonitoring(userProfile) {
         return weight * (36 / (37 - reps));
     }
 
-    // Load goals from Supabase
+    // Load goals from local storage
     async function loadGoals() {
         try {
-            const goals = await db.getGoals(currentUser.id);
+            const goals = JSON.parse(localStorage.getItem('savedGoals')) || [];
             const filteredGoals = {};
 
             goals.forEach(goal => {
                 // Only include goals for exercises we're tracking
-                if (exerciseToMuscleGroup[goal.exercise_name] || compoundExercises.includes(goal.exercise_name)) {
+                if (exerciseToMuscleGroup[goal.exercise] || compoundExercises.includes(goal.exercise)) {
                     const selectedUnit = weightUnitSelect.value;
 
                     // Convert 1RM to selected unit if needed
-                    let target1RM = goal.target_1rm;
-                    if (goal.weight_unit !== selectedUnit) {
-                        target1RM = goal.weight_unit === 'kg' ? target1RM * 2.20462 : target1RM / 2.20462;
+                    let target1RM = goal.target1RM;
+                    if (goal.unit !== selectedUnit) {
+                        target1RM = goal.unit === 'kg' ? target1RM * 2.20462 : target1RM / 2.20462;
                     }
 
                     // Convert deadline to Date object
                     const deadline = new Date(goal.deadline);
 
                     // Add to filtered goals
-                    if (!filteredGoals[goal.exercise_name]) {
-                        filteredGoals[goal.exercise_name] = [];
+                    if (!filteredGoals[goal.exercise]) {
+                        filteredGoals[goal.exercise] = [];
                     }
 
-                    filteredGoals[goal.exercise_name].push({
-                        targetWeight: goal.target_weight,
-                        targetReps: goal.target_reps,
+                    filteredGoals[goal.exercise].push({
+                        targetWeight: goal.targetWeight,
+                        targetReps: goal.targetReps,
                         target1RM: target1RM,
                         deadline: deadline,
                         weeks: goal.weeks,
-                        current1RM: goal.current_1rm,
-                        created: new Date(goal.created_at)
+                        current1RM: goal.current,
+                        created: new Date(goal.created)
                     });
                 }
             });
@@ -221,15 +210,15 @@ function initializeProgressMonitoring(userProfile) {
         }
     }
 
-    // Parse workout data from Supabase
+    // Parse workout data from local storage
     async function parseWorkoutData() {
         try {
-            const workouts = await db.getWorkouts(currentUser.id);
+            const workouts = JSON.parse(localStorage.getItem('savedWorkouts')) || [];
             const parsedData = [];
 
             workouts.forEach(workout => {
                 try {
-                    // Parse the workout data from Supabase
+                    // Parse the workout data from local storage
                     const exercise = workout.exercise_name;
                     const muscleGroup = workout.muscle_group;
                     const date = new Date(workout.workout_date);

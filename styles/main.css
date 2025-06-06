@@ -39,7 +39,7 @@ body {
     font-family: 'Poppins', sans-serif;
     margin: 0;
     padding: 0;
-    padding-top: 0;
+    padding-top: 70px;
     background-color: var(--background-color);
     color: var(--text-color);
     overflow-x: hidden;
@@ -62,7 +62,7 @@ body {
     align-items: center;
     justify-content: space-between;
     padding: 0 3rem;
-    z-index: 1000;
+    z-index: 9999;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     overflow: hidden;
     box-sizing: border-box;
@@ -75,6 +75,7 @@ body {
     backdrop-filter: blur(15px);
     -webkit-backdrop-filter: blur(15px);
     height: 65px;
+    z-index: 9999;
 }
 
 .navbar::before {
@@ -97,7 +98,7 @@ body {
 .logo {
     display: flex;
     align-items: center;
-    gap: 0.6rem;
+    gap: 0.05rem;
     text-decoration: none;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     flex-shrink: 0;
@@ -117,7 +118,7 @@ body {
 .crown-left,
 .crown-right {
     color: #ffd700;
-    font-size: 1.6rem;
+    font-size: 2.2rem;
     text-shadow: 0 0 8px rgba(255, 215, 0, 0.4);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     display: inline-block;
@@ -138,6 +139,7 @@ body {
 }
 
 .logo-text-bottom {
+    margin-top: -0.2rem;
     font-family: 'Poppins', sans-serif;
     font-size: 1.2rem;
     font-weight: 600;
@@ -161,12 +163,13 @@ body {
 .nav-links {
     display: flex;
     align-items: center;
-    gap: 2.5rem;
+    gap: 3.5rem;
     margin: 0;
     padding: 0;
     list-style: none;
     overflow: hidden;
     flex-shrink: 0;
+    z-index: 9999;
 }
 
 .nav-link {
@@ -761,6 +764,16 @@ body {
 
 /* Mobile responsive adjustments for auth */
 @media (max-width: 768px) {
+    body {
+        padding-top: 60px;
+        /* Adjust padding for smaller mobile navbar */
+    }
+
+    .container {
+        max-width: 720px;
+        padding: 0 1rem;
+    }
+
     .auth-section {
         flex-direction: column;
         gap: 8px;
@@ -883,7 +896,12 @@ body {
     }
 
     .nav-links {
-        gap: 3rem;
+        gap: 4rem;
+    }
+
+    /* Feature navigation links - same gap as main nav */
+    #feature-nav-links {
+        gap: 4rem;
     }
 
     .login-btn,
@@ -904,7 +922,19 @@ body {
     }
 
     .nav-links {
-        gap: 2rem;
+        gap: 3rem;
+        /* Increased gap for desktop */
+    }
+
+    /* Feature navigation links - same gap as main nav */
+    #feature-nav-links {
+        gap: 3rem;
+    }
+
+    .login-btn,
+    .signup-btn {
+        padding: 0.8rem 2.2rem;
+        font-size: 1rem;
     }
 }
 
@@ -920,7 +950,13 @@ body {
     }
 
     .nav-links {
-        gap: 1.5rem;
+        gap: 2.5rem;
+        /* Increased gap for tablet landscape */
+    }
+
+    /* Feature navigation links - same gap as main nav */
+    #feature-nav-links {
+        gap: 2.5rem;
     }
 
     .auth-section {
@@ -946,6 +982,11 @@ body {
 
 /* Tablet Portrait - Enhanced Mobile Menu */
 @media (max-width: 768px) {
+    body {
+        padding-top: 60px;
+        /* Adjust padding for smaller mobile navbar */
+    }
+
     .container {
         max-width: 720px;
         padding: 0 1rem;
@@ -986,6 +1027,13 @@ body {
         overflow-y: auto;
         overflow-x: hidden;
         -webkit-overflow-scrolling: touch;
+    }
+
+    /* Feature navigation links in mobile menu */
+    #feature-nav-links {
+        flex-direction: column;
+        gap: 0;
+        width: 100%;
     }
 
     .nav-links.active {
@@ -1345,6 +1393,11 @@ body {
 
 /* Mobile Large - Enhanced */
 @media (max-width: 576px) {
+    body {
+        padding-top: 55px;
+        /* Adjust padding for smaller mobile navbar */
+    }
+
     .container {
         max-width: 540px;
         padding: 0 0.8rem;
@@ -1356,6 +1409,13 @@ body {
 
     .nav-links {
         width: min(320px, 90vw);
+    }
+
+    /* Feature navigation links in small mobile menu */
+    #feature-nav-links {
+        flex-direction: column;
+        gap: 0;
+        width: 100%;
     }
 
     .mobile-nav-header {
@@ -1780,4 +1840,12 @@ body {
 .mobile-nav-header {
     display: none;
     position: relative;
+}
+
+/* Feature navigation links container - inherits spacing */
+#feature-nav-links {
+    display: flex;
+    align-items: center;
+    gap: 3.5rem;
+    /* Same gap as main nav-links for consistency */
 }
