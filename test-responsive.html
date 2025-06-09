@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Responsiveness Test - Double Kings Fitness</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .test-info {
+            background: rgba(231, 76, 60, 0.1);
+            border: 1px solid rgba(231, 76, 60, 0.3);
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+
+        .viewport-info {
+            position: fixed;
+            top: 80px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            z-index: 1000;
+        }
+
+        .test-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin: 1rem 0;
+        }
+
+        .test-content {
+            padding: 2rem 0;
+        }
+
+        .demo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .demo-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .demo-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="viewport-info" id="viewportInfo">
+        Loading...
+    </div>
+
+    <nav class="navbar">
+        <div class="logo">
+            <div class="logo-icon">
+                <div class="crown-container">
+                    <span class="crown-left"><i class="fas fa-crown"></i></span>
+                    <span class="crown-right"><i class="fas fa-crown"></i></span>
+                </div>
+                <span class="logo-text-bottom">Double Kings</span>
+            </div>
+        </div>
+
+        <!-- Mobile Menu Toggle -->
+        <div class="mobile-menu-toggle" id="mobileMenuToggle">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+
+        <!-- Mobile Menu Overlay -->
+        <div class="mobile-menu-overlay" id="mobileMenuOverlay"></div>
+
+        <div class="nav-links" id="navLinks">
+            <!-- Mobile Menu Header -->
+            <div class="mobile-nav-header">
+                <button class="mobile-nav-close" id="mobileNavClose">
+                    <i class="fas fa-times"></i>
+                </button>
+                <div class="mobile-nav-logo">
+                    <div class="crown-container">
+                        <span class="crown-left"><i class="fas fa-crown"></i></span>
+                        <span class="crown-right"><i class="fas fa-crown"></i></span>
+                    </div>
+                    <span class="mobile-nav-title">Double Kings</span>
+                    <span class="mobile-nav-subtitle">FITNESS</span>
+                </div>
+            </div>
+
+            <a href="index.html" class="nav-link">Home</a>
+            <a href="workout-logger.html" class="nav-link">Workout Logger</a>
+            <a href="progress-monitoring.html" class="nav-link">Progress Monitoring</a>
+            <a href="goal-setting.html" class="nav-link">Goal Setting</a>
+            <a href="#" class="nav-link active">Responsive Test</a>
+
+            <div class="auth-section">
+                <button class="login-btn">Login</button>
+                <button class="signup-btn">Sign Up</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="test-content">
+        <div class="container">
+            <header class="page-header">
+                <h1>Mobile Responsiveness Test</h1>
+                <p class="subtitle">Testing mobile menu functionality and responsive design</p>
+            </header>
+
+            <div class="test-info">
+                <h3><i class="fas fa-mobile-alt"></i> Mobile Menu Test</h3>
+                <p>Click the hamburger menu (☰) in the top-right corner to test mobile navigation. The menu should:</p>
+                <ul>
+                    <li>Slide in smoothly from the left</li>
+                    <li>Show a backdrop overlay</li>
+                    <li>Display navigation links with hover effects</li>
+                    <li>Be closeable by clicking the X button, overlay, or swiping left</li>
+                    <li>Work consistently across all viewport sizes</li>
+                </ul>
+            </div>
+
+            <div class="test-buttons">
+                <button class="action-btn" onclick="testMobileMenu()">
+                    <i class="fas fa-bars"></i> Toggle Mobile Menu
+                </button>
+                <button class="secondary-btn" onclick="simulateResize(375)">
+                    <i class="fas fa-mobile"></i> iPhone Size (375px)
+                </button>
+                <button class="secondary-btn" onclick="simulateResize(768)">
+                    <i class="fas fa-tablet"></i> Tablet Size (768px)
+                </button>
+                <button class="secondary-btn" onclick="simulateResize(1024)">
+                    <i class="fas fa-desktop"></i> Desktop Size (1024px)
+                </button>
+            </div>
+
+            <div class="demo-grid">
+                <div class="demo-card">
+                    <h3><i class="fas fa-check-circle"></i> Viewport Responsive</h3>
+                    <p>The layout automatically adapts to different screen sizes using CSS Grid and Flexbox.</p>
+                </div>
+                <div class="demo-card">
+                    <h3><i class="fas fa-touch"></i> Touch Optimized</h3>
+                    <p>All interactive elements have appropriate touch targets (minimum 44px) for mobile devices.</p>
+                </div>
+                <div class="demo-card">
+                    <h3><i class="fas fa-eye"></i> High Contrast</h3>
+                    <p>Text and UI elements maintain good contrast ratios for accessibility across all screen sizes.</p>
+                </div>
+                <div class="demo-card">
+                    <h3><i class="fas fa-font"></i> Typography Scaling</h3>
+                    <p>Font sizes scale appropriately using relative units and media queries for optimal readability.
+                    </p>
+                </div>
+            </div>
+
+            <div class="test-info">
+                <h3><i class="fas fa-list-check"></i> Responsive Features Tested</h3>
+                <div class="demo-grid">
+                    <div>
+                        <h4>Navigation</h4>
+                        <ul>
+                            <li>✓ Mobile hamburger menu</li>
+                            <li>✓ Slide-in navigation panel</li>
+                            <li>✓ Touch-friendly buttons</li>
+                            <li>✓ Backdrop overlay</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4>Layout</h4>
+                        <ul>
+                            <li>✓ Flexible grid system</li>
+                            <li>✓ Stacked mobile layout</li>
+                            <li>✓ Appropriate spacing</li>
+                            <li>✓ Content prioritization</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4>Typography</h4>
+                        <ul>
+                            <li>✓ Scalable font sizes</li>
+                            <li>✓ Readable line heights</li>
+                            <li>✓ Proper contrast ratios</li>
+                            <li>✓ iOS zoom prevention</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4>Interactions</h4>
+                        <ul>
+                            <li>✓ Touch-optimized buttons</li>
+                            <li>✓ Swipe gestures</li>
+                            <li>✓ Smooth animations</li>
+                            <li>✓ Focus management</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/ui-interactions.js"></script>
+    <script>
+        // Display current viewport information
+        function updateViewportInfo() {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            const deviceType = width <= 480 ? 'Mobile' : width <= 768 ? 'Tablet' : 'Desktop';
+
+            document.getElementById('viewportInfo').innerHTML = `
+                ${deviceType}<br>
+                ${width}px × ${height}px<br>
+                ${window.devicePixelRatio}x DPR
+            `;
+        }
+
+        // Test mobile menu programmatically
+        function testMobileMenu() {
+            const toggle = document.getElementById('mobileMenuToggle');
+            if (toggle) {
+                toggle.click();
+            }
+        }
+
+        // Simulate different viewport sizes (for desktop testing)
+        function simulateResize(width) {
+            if (window.resizeTo) {
+                window.resizeTo(width, 800);
+            } else {
+                alert(`Simulated resize to ${width}px (actual resize not supported in this browser)`);
+            }
+        }
+
+        // Update viewport info on load and resize
+        window.addEventListener('load', updateViewportInfo);
+        window.addEventListener('resize', updateViewportInfo);
+
+        // Test mobile menu automatically on small screens
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🧪 Responsive Test Page: Loaded successfully');
+            console.log(`📱 Current viewport: ${window.innerWidth}px × ${window.innerHeight}px`);
+
+            // Automatically show mobile menu on very small screens for testing
+            if (window.innerWidth <= 375) {
+                setTimeout(() => {
+                    console.log('🧪 Auto-testing mobile menu on small screen');
+                    testMobileMenu();
+                }, 2000);
+            }
+        });
+
+        // Add test for touch events
+        document.addEventListener('touchstart', (e) => {
+            console.log('👆 Touch detected:', e.touches.length, 'finger(s)');
+        }, { passive: true });
+
+        // Add test for orientation changes
+        window.addEventListener('orientationchange', () => {
+            console.log('🔄 Orientation changed');
+            setTimeout(updateViewportInfo, 100);
+        });
+    </script>
+</body>
+
+</html>

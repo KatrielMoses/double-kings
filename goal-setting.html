@@ -153,97 +153,106 @@
     <!-- Goal Form Modal -->
     <div id="goalModal" class="modal">
         <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>Create New Goal</h2>
-            <p>Set a specific and achievable strength goal</p>
-
-            <form id="goalForm">
-                <div class="form-group">
-                    <label for="exerciseSelect">Exercise</label>
-                    <select id="exerciseSelect" required>
-                        <option value="">Select Exercise</option>
-                        <option value="Bench Press">Bench Press</option>
-                        <option value="Squats">Squats</option>
-                        <option value="Deadlifts">Deadlifts</option>
-                        <option value="custom">Add Custom Exercise...</option>
-                    </select>
+            <div class="modal-header">
+                <div>
+                    <h2>Create New Goal</h2>
+                    <p class="subtitle">Set a specific and achievable strength goal</p>
                 </div>
+                <button class="close" type="button">&times;</button>
+            </div>
 
-                <div class="form-group" id="customExerciseGroup" style="display: none;">
-                    <label for="customExercise">Custom Exercise Name</label>
-                    <input type="text" id="customExercise" placeholder="e.g., Military Press">
-                </div>
-
-                <div class="form-group">
-                    <label for="goalWeight">Target Weight</label>
-                    <div class="input-with-unit">
-                        <input type="number" id="goalWeight" min="1" step="1" required>
-                        <select id="goalWeightUnit" required>
-                            <option value="kg">kg</option>
-                            <option value="lbs">lbs</option>
+            <div class="modal-body">
+                <form id="goalForm">
+                    <div class="form-group">
+                        <label for="exerciseSelect">Exercise</label>
+                        <select id="exerciseSelect" required>
+                            <option value="">Select Exercise</option>
+                            <option value="Bench Press">Bench Press</option>
+                            <option value="Squats">Squats</option>
+                            <option value="Deadlifts">Deadlifts</option>
+                            <option value="custom">Add Custom Exercise...</option>
                         </select>
                     </div>
-                </div>
 
-                <div class="form-group">
-                    <label for="goalReps">Target Reps</label>
-                    <input type="number" id="goalReps" min="1" max="30" step="1" value="5" required>
-                    <small class="form-help">The 1RM will be calculated automatically</small>
-                </div>
-
-                <div class="form-group">
-                    <label>Current Best</label>
-                    <div class="current-best-options">
-                        <div class="radio-option">
-                            <input type="radio" id="current1RMOption" name="currentBestType" value="1rm" checked>
-                            <label for="current1RMOption">1RM</label>
-                        </div>
-                        <div class="radio-option">
-                            <input type="radio" id="currentRepsOption" name="currentBestType" value="reps">
-                            <label for="currentRepsOption">Weight × Reps</label>
-                        </div>
+                    <div class="form-group" id="customExerciseGroup" style="display: none;">
+                        <label for="customExercise">Custom Exercise Name</label>
+                        <input type="text" id="customExercise" placeholder="e.g., Military Press">
                     </div>
 
-                    <div id="current1RMInputGroup">
+                    <div class="form-group">
+                        <label for="goalWeight">Target Weight</label>
                         <div class="input-with-unit">
-                            <input type="number" id="currentWeight" min="0" step="1" required>
-                            <span id="weightUnit">kg</span>
+                            <input type="number" id="goalWeight" min="1" step="1" required>
+                            <select id="goalWeightUnit" required>
+                                <option value="kg">kg</option>
+                                <option value="lbs">lbs</option>
+                            </select>
                         </div>
-                        <small class="form-help">Calculated using Brzycki formula from your workout logs</small>
                     </div>
 
-                    <div id="currentRepsInputGroup" style="display: none;">
-                        <div class="input-group-row">
+                    <div class="form-group">
+                        <label for="goalReps">Target Reps</label>
+                        <input type="number" id="goalReps" min="1" max="30" step="1" value="5" required>
+                        <small class="form-help">The 1RM will be calculated automatically</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Current Best</label>
+                        <div class="current-best-options">
+                            <div class="radio-option">
+                                <input type="radio" id="current1RMOption" name="currentBestType" value="1rm" checked>
+                                <label for="current1RMOption">1RM</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" id="currentRepsOption" name="currentBestType" value="reps">
+                                <label for="currentRepsOption">Weight × Reps</label>
+                            </div>
+                        </div>
+
+                        <div id="current1RMInputGroup">
                             <div class="input-with-unit">
-                                <input type="number" id="currentBestWeight" min="0" step="1" placeholder="Weight"
-                                    required>
-                                <span id="currentWeightUnit">kg</span>
+                                <input type="number" id="currentWeight" min="0" step="1" required>
+                                <span id="weightUnit">kg</span>
                             </div>
-                            <div class="input-with-label">
-                                <input type="number" id="currentBestReps" min="1" max="30" step="1" placeholder="Reps"
-                                    required>
-                                <span>reps</span>
-                            </div>
+                            <small class="form-help">Calculated using Brzycki formula from your workout logs</small>
                         </div>
-                        <small class="form-help">Your current best set for this exercise</small>
+
+                        <div id="currentRepsInputGroup" style="display: none;">
+                            <div class="input-group-row">
+                                <div class="input-with-unit">
+                                    <input type="number" id="currentBestWeight" min="0" step="1" placeholder="Weight"
+                                        required>
+                                    <span id="currentWeightUnit">kg</span>
+                                </div>
+                                <div class="input-with-label">
+                                    <input type="number" id="currentBestReps" min="1" max="30" step="1"
+                                        placeholder="Reps" required>
+                                    <span>reps</span>
+                                </div>
+                            </div>
+                            <small class="form-help">Your current best set for this exercise</small>
+                        </div>
                     </div>
-                </div>
 
-                <div class="form-group">
-                    <label for="timeFrameWeeks">Time Frame (Weeks)</label>
-                    <input type="number" id="timeFrameWeeks" min="1" max="52" value="12" required>
-                    <small class="form-help">How many weeks to achieve this goal?</small>
-                </div>
+                    <div class="form-group">
+                        <label for="timeFrameWeeks">Time Frame (Weeks)</label>
+                        <input type="number" id="timeFrameWeeks" min="1" max="52" value="12" required>
+                        <small class="form-help">How many weeks to achieve this goal?</small>
+                    </div>
 
-                <div class="form-group">
-                    <label for="goalNotes">Notes (Optional)</label>
-                    <textarea id="goalNotes" rows="3" placeholder="Additional details about your goal..."></textarea>
-                </div>
+                    <div class="form-group">
+                        <label for="goalNotes">Notes (Optional)</label>
+                        <textarea id="goalNotes" rows="3"
+                            placeholder="Additional details about your goal..."></textarea>
+                    </div>
+                </form>
+            </div>
 
+            <div class="modal-footer">
                 <div class="form-actions">
-                    <button type="submit" class="submit-btn">Save Goal</button>
+                    <button type="submit" form="goalForm" class="submit-btn">Save Goal</button>
                 </div>
-            </form>
+            </div>
         </div>
     </div>
 

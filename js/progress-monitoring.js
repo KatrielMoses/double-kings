@@ -279,6 +279,8 @@ function initializeProgressMonitoring(userProfile) {
                     return (now - workoutDate) <= 180 * 24 * 60 * 60 * 1000;
                 case '1year':
                     return (now - workoutDate) <= 365 * 24 * 60 * 60 * 1000;
+                case '2years':
+                    return (now - workoutDate) <= 730 * 24 * 60 * 60 * 1000;
                 case 'all':
                 default:
                     return true;
@@ -361,9 +363,11 @@ function initializeProgressMonitoring(userProfile) {
             borderColor: colors[index],
             backgroundColor: colors[index] + '20',
             fill: false,
-            tension: 0.1,
+            tension: 0.3,
             pointRadius: 4,
-            pointHoverRadius: 6
+            pointHoverRadius: 6,
+            borderWidth: 2,
+            showLine: true
         }));
 
         // Add goal projection lines - from last workout to goal target
@@ -457,7 +461,7 @@ function initializeProgressMonitoring(userProfile) {
 
         // Create new chart
         progressChart = new Chart(ctx, {
-            type: 'scatter',
+            type: 'line',
             data: {
                 datasets: datasets
             },
@@ -468,9 +472,16 @@ function initializeProgressMonitoring(userProfile) {
                     x: {
                         type: 'time',
                         time: {
-                            unit: 'day',
+                            unit: function (context) {
+                                const timeRange = timeRangeSelect.value;
+                                if (timeRange === '2weeks' || timeRange === '1month') return 'day';
+                                if (timeRange === '3months' || timeRange === '6months') return 'week';
+                                return 'month';
+                            },
                             displayFormats: {
-                                day: 'MMM d'
+                                day: 'MMM d',
+                                week: 'MMM d',
+                                month: 'MMM yyyy'
                             }
                         },
                         title: {
@@ -479,7 +490,8 @@ function initializeProgressMonitoring(userProfile) {
                             color: '#ecf0f1'
                         },
                         ticks: {
-                            color: '#ecf0f1'
+                            color: '#ecf0f1',
+                            maxTicksLimit: 8
                         },
                         grid: {
                             color: 'rgba(255, 255, 255, 0.1)'
@@ -496,6 +508,38 @@ function initializeProgressMonitoring(userProfile) {
                         },
                         grid: {
                             color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        grace: '25%',
+                        beginAtZero: false,
+                        suggestedMin: function (context) {
+                            const data = context.chart.data.datasets.flatMap(dataset => dataset.data.map(point => point.y));
+                            if (data.length === 0) return 0;
+
+                            const minValue = Math.min(...data);
+                            const maxValue = Math.max(...data);
+                            const range = maxValue - minValue;
+
+                            // If there's very little variation, create a meaningful range
+                            if (range < 10) {
+                                return Math.max(0, minValue - 20);
+                            }
+
+                            return Math.max(0, minValue - range * 0.4);
+                        },
+                        suggestedMax: function (context) {
+                            const data = context.chart.data.datasets.flatMap(dataset => dataset.data.map(point => point.y));
+                            if (data.length === 0) return 100;
+
+                            const minValue = Math.min(...data);
+                            const maxValue = Math.max(...data);
+                            const range = maxValue - minValue;
+
+                            // If there's very little variation, create a meaningful range
+                            if (range < 10) {
+                                return maxValue + 20;
+                            }
+
+                            return maxValue + range * 0.4;
                         }
                     }
                 },
